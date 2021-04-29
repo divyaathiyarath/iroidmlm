@@ -41,18 +41,18 @@ exports.register = async(req,res)=>{
                             else{
                                 let mp = 0
                                 rp = data[0].referencePoint+100
-                                // if(doc.rc!=null){
+                                if(doc.rc!=null){
                                     mp = doc.matchingPoint + 50
-                                    // matching(doc.parent)
-                                    console.log("x........    "+doc)
-                                    console.log("userCode of x.....  "+doc.userCode)
-                                    matching(doc.userCode)
-                                // }
-                                // user.findOneAndUpdate({userCode:doc.userCode},{lc:userCode,matchingPoint:mp},(error,response)=>{
-                                //     if(error){
-                                //         throw error
-                                //     }
-                                // })
+                                    // matching(doc.userCode)
+                                    if(doc.parent){
+                                        isSymmetric(doc.parent,doc.userCode)
+                                    }
+                                }
+                                user.findOneAndUpdate({userCode:doc.userCode},{lc:userCode,matchingPoint:mp},(error,response)=>{
+                                    if(error){
+                                        throw error
+                                    }
+                                })
                                 user.findOneAndUpdate({userCode:doc.userCode},{lc:userCode},(error,response)=>{
                                     if(error){
                                         throw error
@@ -63,6 +63,7 @@ exports.register = async(req,res)=>{
                                         throw error
                                     }
                                 })
+                                _user.level = doc.level + 1
                                 _user.rootParent = data[0].userCode
                                 _user.parent = doc.userCode
                                 _user.save().then(
@@ -81,16 +82,18 @@ exports.register = async(req,res)=>{
                             }
                             else{
                                 rp = data[0].referencePoint+100
-                                // if(doc.lc!=null){
-                                    // mp = doc.matchingPoint + 50
-                                    console.log("matching user right...........   "+doc.userCode);
-                                    matching(doc.userCode)
-                                // }
-                                // user.findOneAndUpdate({userCode:doc.userCode},{rc:userCode,matchingPoint:mp},(error,response)=>{
-                                //     if(error){
-                                //         throw error
-                                //     }
-                                // })
+                                if(doc.lc!=null){
+                                    mp = doc.matchingPoint + 50
+                                    // matching(doc.userCode)
+                                    if(doc.parent){
+                                        isSymmetric(doc.parent,doc.userCode)
+                                    }
+                                }
+                                user.findOneAndUpdate({userCode:doc.userCode},{rc:userCode,matchingPoint:mp},(error,response)=>{
+                                    if(error){
+                                        throw error
+                                    }
+                                })
                                 user.findOneAndUpdate({userCode:doc.userCode},{rc:userCode},(error,response)=>{
                                     if(error){
                                         throw error
@@ -103,8 +106,8 @@ exports.register = async(req,res)=>{
                                 })
                                 _user.rootParent = data[0].userCode
                                 _user.parent = doc.userCode
+                                _user.level = doc.level + 1
                                 _user.save().then(
-                                    
                                     console.log("success")
                                 ).catch(err=>{
                                     res.send(err)
@@ -125,68 +128,40 @@ exports.register = async(req,res)=>{
                    })
 
                }
-               // Matching
-               let matching = async (root)=>{
-                let i = 0
-                console.log("rootx......."+root);
-                let result = await user.findOne({userCode:root})
-                console.log("Parent data    "+result)
-                    op = await isSymmetric(result)
-                    console.log("op   "+op)
-                    if(op == false || result == null){
-                        console.log("False condition")
-                        res.send("Completed")
-                    }
-                    if(op == true){
-                        console.log("True condition")
-                        i++
-                        console.log("mp  "+i)
-                        //Add matching point
-                        mp = result.matchingPoint + 50
-                        await user.findOneAndUpdate({userCode:root},{matchingPoint:mp})
-                        if(result.parent != null){
-                            matching(result.parent)
-                        }
-                        if(result.parent == null){
-                           res.send("Completed")
-                         }
-                         
-                        
-                    }
-               }
-               let isSymmetric = async (root)=>{
-                   console.log("isSymmetric root   "+root)
-                   let le = await user.findOne({userCode:root.lc})
-                   let ri = await user.findOne({userCode:root.rc})
-                   if((le == null && ri != null) || (le !=null && ri == null)){
-                    return false
-                    }
-                //    if(root.lc != null && root.rc != null){
-                    return isMirror(root.lc,root.rc)
-                //    }
-                //    else{
-                       return false
-                //    }
-                   
-               }
-               let isMirror = async (l,r)=>{
-                   console.log("isMirror")
-                   let le = await user.findOne({userCode:l})
-                   let ri = await user.findOne({userCode:r})
-                   if(le == null && ri == null){
-                       console.log("checking le == null && ri == null")
-                       return true
+               let isSymmetric = async (pa,user)=>{
+                   let parent = await user.findOne({userCode:pa})
+                   let children = async(left,right)=>{
+                       let leftUser = user.find({userCode:left})
+                       let rightUser = user.find({userCode:right})
+                       if(leftUser.lc && leftUser.rc && rightUser.lc && rightUser.rc){
+                           children(leftUser.lc,leftUser.rc)
+                           children(rightUser.lc,rightUser.rc)
+                       }
+                       else if(!leftUser.lc && !leftUser.rc && !rightUser.lc && !rightUser.rc){
+                            if(leftUser.left == _user.level){
+                                mp = parent.matchingPoint + 50
+                                user.findOneAndUpdate({userCode:parent.userCode},{matchingPoint:mp})
+                                if(parent.parent){
+                                    isSymmetric(parent.parent,parent.userCode)
+                                }
+                            }
+                       }
                    }
-                   if(le !=null && ri!= null){
-                       console.log("checking le !=null && ri!= null")
-                       return (isMirror(le.lc,le.rc) && isMirror(ri.lc,ri.rc))
+                   if(parent.rc){
+                    if(parent.rc != _user){
+                        let rightChild = user.findOne({userCode:parent.rc})
+                        children(rightChild.lc,rightChild.rc)
+                    }
+                   }else if(parent.lc){
+                    if(parent.lc != _user){
+                        let leftChild = user.findOne({userCode:parent.lc})
+                        children(leftChild.lc,leftChild.rc)
+                    }
                    }
-                   
 
-                    //    return false
                }
-               //
            }
+           res.send("Success")
        })
     }
     catch(error){

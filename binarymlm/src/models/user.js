@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema({
     },
     rootParent: {
         type: String
+    },
+    level:{
+        type:Number,
+        default:0
     }
 })
 module.exports = mongoose.model('user',userSchema)
