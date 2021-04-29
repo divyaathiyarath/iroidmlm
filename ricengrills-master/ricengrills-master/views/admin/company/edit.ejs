@@ -1,0 +1,209 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<link href="<%=asset_url%>/public/lib/jt.timepicker/jquery.timepicker.css" rel="stylesheet">
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <a class="breadcrumb-item" href="<%=app_url%>/companies">Companies</a>
+                <span class="breadcrumb-item active">Edit Company</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Edit Company</h4>
+        </div>
+        <%
+            let {_id,name,email,mobile} = company
+            let {address_line1,address_line2,location,suburb_id} = address
+            let lat = 0
+            let lng = 0
+            if(location){
+                let {coordinates} = location
+                if(coordinates){
+                    lng = coordinates[0]
+                    lat = coordinates[1]
+                }
+            }
+        %>
+
+        <div class="br-pagebody">
+            <div class="row mg-t-40">
+                <div class="col-xl-6">
+                    <form id="mainForm" action="javascript:;">
+                        <div class="form-layout form-layout-4 bg-white">
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Name:<span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="hidden" name="company_id" value="<%=_id%>">
+                                    <input type="text" class="form-control" placeholder="Enter Company Name" name="name" value="<%=name%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Email:</label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="email" class="form-control" placeholder="Enter email" name="email" value="<%=email%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Mobile:</label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter mobile" name="mobile" value="<%=mobile%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Address Line 1: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Address Line 1" name="address_line1" id="autocomplete" onFocus="geolocate()" onblur="checkLatLng(this)" value="<%=address_line1%>">
+                                    <input type="hidden" name="lat" id="input-lat" value="<%=lat%>">
+                                    <input type="hidden" name="lng" id="input-lng" value="<%=lng%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Address Line 2: </label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Address Line 2" name="address_line2" value="<%=address_line2%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Suburbs: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <select class="form-control select2-show-search" data-placeholder="Choose suburb" id="suburb_id" name="suburb_id">
+                                        <option label="Choose one"></option>
+                                        <%
+                                            suburbs.forEach(suburb=>{
+                                                let selected = ""
+                                                if(suburb_id.toString() == suburb._id.toString()){
+                                                    selected = "selected"
+                                                }
+                                                %>
+                                                 <option value="<%=suburb._id%>" <%=selected%>><%=suburb.name%></option>
+                                                <%
+                                            })
+                                        %>
+                                      </select>
+                                </div>
+                            </div>
+                            <div class="form-layout-footer mg-t-30">
+                                <button class="btn btn-info" type="submit">Submit Form</button>
+                                <a href="<%=app_url%>/companies"><button class="btn btn-secondary" type="button">Cancel</button></a>
+                            </div>
+                        </div>
+                        <!-- form-layout -->
+                    </form>
+                </div>
+                <!-- col-6 -->
+            </div>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script src="<%=asset_url%>/public/js/googleplaces.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initAutocomplete"></script>
+        <script src="<%=asset_url%>/public/lib/jt.timepicker/jquery.timepicker.js"></script>
+        <script>        
+        $("#companies").addClass('active show-sub')
+        $("#new_company").addClass('active')
+
+        function checkLatLng(el) {
+            var val = $(el).val();
+            console.log({
+                val
+            })
+            if (!val) {
+                $('#input-lat').val(``);
+                $('#input-lng').val(``);
+            }
+            var lat = $('#input-lat').val();
+            if (!lat) {
+                $(el).val(``);
+            }
+        }
+
+        // Submit login form
+        $("form#mainForm").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                name: {
+                    required: true
+                },
+                email: {
+                    required: false,
+                    email: true
+                },
+                mobile: {
+                    required: false
+                },
+                address_line1: {
+                    required: true
+                }
+            },
+            messages: {
+                name: {
+                    required: "Company Name is required"
+                },
+                contact_name: {
+                    required: "Company contact person name is required"
+                },
+                email: {
+                    required: "Email is required",
+                    email: "Email is not valid"
+                },
+                mobile: {
+                    required: "Mobile number is required"
+                },
+                address_line1: {
+                    required: "Address field is required"
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                var form = document.getElementById("mainForm");
+                // var data = new FormData(form);
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/companies/edit",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function() {
+                                window.location.href = "<%=app_url%>/companies";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

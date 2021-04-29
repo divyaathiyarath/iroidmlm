@@ -1,0 +1,174 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <span class="breadcrumb-item active">Collection Points</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Collection Points</h4>
+        </div>
+
+        <div class="br-pagebody">
+            <form action="">
+                <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                    <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                        <a href="<%=app_url%>/collectionpoints/download" type="reset" class="btn btn-info pd-y-13 pd-x-20 bd-0 mg-md-r-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">
+                            <i class="fa fa-download"></i> Download Excel
+                        </a>
+                        <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Search Name / Mobile/ Email">
+                        <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                        <a href="<%=app_url%>/collectionpoints" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <table class="table bg-white border-top-1 border border-light">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Contact Person</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Address</th>
+                        <th>Opening Time</th>
+                        <th>Close Time</th>
+                        <th>Image</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let i=0 %>
+                        <% 
+                            collectionpoints.forEach(collectionpoint => {
+                                i++ 
+                                var {name,contact_name, email, mobile, address, image,starttime,closetime } = collectionpoint 
+                                address_html = ""
+                                if(address){
+                                    var {address_line1, address_line2, suburb } = address
+                                    var suburb_name = ""
+                                    if(suburb){
+                                        var { name : suburb_name } = suburb
+                                    }
+                                    address_html += address_line1?address_line1+",":""
+                                    address_html += address_line2?address_line2:""
+                                    address_html += suburb_name?`<br/>Suburb :<b>${suburb_name}</b>`:""
+                                } 
+                        
+                        %>
+                            <tr>
+                                <td>
+                                    <%= i %>
+                                </td>
+                                <td>
+                                    <%= name %>
+                                </td>
+                                <td>
+                                    <%= contact_name %>
+                                </td>
+                                <td>
+                                    <%= email %>
+                                </td>
+                                <td>
+                                    <%= mobile %>
+                                </td>
+                                <td>
+                                    <%- address_html %>
+                                </td>
+                                <td>
+                                    <%= starttime %>
+                                </td>
+                                <td>
+                                    <%= closetime %>
+                                </td>
+                                <td>
+                                    <%if(image){
+                                        %>
+                                        <img src="<%=asset_url+'/'+collectionpoint.image%>" alt="" style="width:60px;">
+                                        <%
+                                    }%>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="javascript:;" class="btn btn-sm btn-danger submitBtn" onclick="deleteCollectionPoint('<%=collectionpoint._id%>')" title="delete">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                        <a href="<%=app_url%>/collectionpoints/edit/<%=collectionpoint._id%>" class="btn btn-sm btn-info" title="edit">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <a href="<%=app_url%>/collectionpoints/excessstock/<%=collectionpoint._id%>" class="btn btn-sm btn-success" title="excess stock details">
+                                            <i class="icon ion-pizza"></i>
+                                        </a>
+                                    </div>                                   
+                                </td>
+                            </tr>
+                            <% });%>
+                </tbody>
+            </table>
+            <%-include('../shared/pagination.ejs',pages)%>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+        $("#collectionpoints").addClass('active show-sub')
+        $("#allcps").addClass('active')
+            function deleteCollectionPoint(collection_point) {
+                $('.submitBtn').prop('disabled', true)
+                $.confirm({
+                    title: 'Confirm!',
+                    content: 'Do you want to delete this collection point?',
+                    buttons: {
+                        Delete: function() {
+                            $.ajax({
+                                url: "<%=app_url%>/collectionpoints/delete",
+                                data: {
+                                    collection_point
+                                },
+                                type: "POST",
+                                dataType: "json",
+                                success: function(data) {
+                                    var {
+                                        status,
+                                        message,
+                                        errors,
+                                        data
+                                    } = data;
+                                    errors = typeof errors != 'undefined' ? errors : []
+                                    message = typeof message != 'undefined' ? message : null
+                                    data = typeof data != 'undefined' ? data : {}
+
+                                    if (status == true) {
+                                        toastr["success"](message);
+                                        setTimeout(function() {
+                                            window.location.href = "<%=app_url%>/collectionpoints";
+                                        }, 1000)
+                                    } else {
+                                        if (errors.length > 0) {
+                                            toastr["error"](errors[0]);
+                                        } else if (message) {
+                                            toastr["error"](message);
+                                        }
+                                        $('.submitBtn').prop('disabled', false)
+                                    }
+                                },
+                                error: function(error) {
+                                    $('.submitBtn').prop('disabled', false)
+                                }
+                            });
+                        },
+                        Cancel: function() {
+                            $.alert('Canceled!');
+                        }
+                    }
+                });
+            }
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

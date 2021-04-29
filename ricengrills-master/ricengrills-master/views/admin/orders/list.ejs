@@ -1,0 +1,574 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Orders</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Order List</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="" id="searchForm">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80 mg-t-10">
+                <div class="d-md-flex pd-md-y-0 col-md-12">
+                    <select class="form-control mr-1 col-md-2" name="status" onchange="changeStatus()">
+                        <option value="">ALL</option>
+                        <option value="1" <%=(status==="1")?"selected":""%>>Delivered</option>
+                        <option value="0" <%=(status==="0")?"selected":""%>>Pending</option>
+                    </select>
+                    <select class="form-control mr-1 col-md-2" name="company" onchange="changeStatus()">
+                        <option value="">ALL</option>    
+                        <%
+                            companies.forEach((cmp)=>{
+                                let selected = ""
+                                if(cmp._id.toString() == company){
+                                    selected = "selected"
+                                }
+                                %>
+                                    <option value="<%=cmp._id%>" <%=selected%>><%=cmp.name%></option>
+                                <%
+                            })
+                        %>                    
+                    </select>
+                    <input class="form-control fc-datepicker ml-2 mg-md-r-10" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2 mg-md-r-10" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Name / Email / Mobile/ Suburb">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/orders/list" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <div class="table-responsive" style="overflow: auto;">
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Created Date</th>
+                        <th>Products/Quantity</th>
+                        <th>Scheduled Date</th>
+                        <th>Shift</th>
+                        <th>Suburb Name</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Delivered By</th>
+                        <th>Delivered Time</th>
+                        <th>Collection Point/ User Address</th>
+                        <th>Break Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach((order,index)=>{ 
+                        <!-- console.log(order) -->
+                            let {_id,orders,booking_id,scheduled_date,created_at,user,shift, booking_type, redeemed, address,driver_id,address_id,shift_id,driver, delivered_time, collectionpoint, delivery_type, company_id, company: cmp_details, break_time } = order                        
+                            if(delivery_type == "ONLINE"){
+                                delivery_type = "EXPRESS"
+                            }else if(delivery_type == "COLLECTION_POINT" && !company_id){
+                                delivery_type = "COLLECTIONPOINT"
+                            }else{
+                                delivery_type = "COMPANY"
+                            }   
+                            let user_name = ""
+                            let mobile = ""
+                            let suburb_name = ""
+                            let address_string = ""
+                            if(collectionpoint){
+                                let {name, email, mobile, address} = collectionpoint
+                                var {address_line1, address_line2, suburb} = address
+                                if(suburb){                                
+                                    suburb_name = suburb.name
+                                } 
+                                address_string += `
+                                <table style="width: 100%;" border="1">
+                                <tr>
+                                    <th>Collection Point</th><td>${name}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th><td>${email}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mobile</th><td>${mobile}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 1</th><td>${address_line1? address_line1 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 2</th><td>${address_line2 ? address_line2 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Suburb</th><td>${suburb_name ? suburb_name : ""}</td>
+                                </tr>
+                                </table>
+                                `
+                            }else if(cmp_details){
+                                let {name, email, mobile} = cmp_details
+                                var {address_line1, address_line2, suburb} = address
+                                if(suburb){                                
+                                    suburb_name = suburb.name
+                                } 
+                                address_string += `
+                                <table style="width: 100%;" border="1">
+                                <tr>
+                                    <th>Company</th><td>${name}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email</th><td>${email}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mobile</th><td>${mobile}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 1</th><td>${address_line1? address_line1 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 2</th><td>${address_line2 ? address_line2 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Suburb</th><td>${suburb_name ? suburb_name : ""}</td>
+                                </tr>
+                                </table>
+                                `
+
+                            }else if(address){
+                                var {address_line1,address_line2,house_flat_no, landmark, to_reach, suburb} = address
+                                if(suburb){                                
+                                    suburb_name = suburb.name
+                                } 
+                                address_string += `
+                                <table style="width: 100%;" border="1">
+                                <tr>
+                                    <th>Address Line 1</th><td>${address_line1 ? address_line1 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 2</th><td>${address_line2 ? address_line2 : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Unit</th><td>${house_flat_no ? house_flat_no : ""}</td>
+                                </tr>
+                                <tr>
+                                    <th>Street Name</th><td>${landmark ? landmark : ""}</td>
+                                </tr>
+                                <tr>    
+                                    <th>Instructions reach location</th><td>${to_reach ? to_reach : ""}</td>
+                                </tr>
+                                </table>
+                                `
+                            }
+                            if(user){
+                                user_name = user.name
+                                mobile = user.mobile
+                            }
+                            let shift_name = ""
+                            if(shift){
+                                shift_name = shift.name
+                            }
+                        %>
+                    <tr>
+                        <td><%= booking_id %></td>
+                        <td><%=user_name%></td>
+                        <td><%=mobile%></td>
+                        <td><%=moment(created_at).format('DD-MM-YYYY hh:mm a')%></td>
+                        <td>
+                            <%
+                            if(orders.length > 0){
+                                orders.forEach(order=>{
+                                    let {product_id, name:product_name,quantity} = order
+                                    %>
+                            <div class="badge badge-success">
+                                <%=product_name+"-"+quantity%>
+                            </div>
+                            <%
+                                })
+                            }
+                            %>
+                        </td>
+                        <td><%=moment(scheduled_date).format('DD-MM-YYYY')%></td>
+                        <td><%=shift_name%></td>
+                        <td><%=suburb_name%></td>
+                        <td><%=booking_type%>/<%=delivery_type%></td>
+                        <td>
+                            <%
+                                if(redeemed == true && delivery_type == "EXPRESS"){
+                                    %>
+                            <div class="badge badge-success">Delivered</div>
+                            <button type="button" class="btn btn-danger" title="mark item as undelivered"
+                                onclick="markundelivered('<%=_id%>','<%=redeemed%>','<%=driver_id%>','<%=address_id%>','<%=shift_id%>')"><i
+                                    class="fa fa-close"></i></button>
+                            <%
+                                }else if(delivery_type == "EXPRESS"){
+                                    %>
+                            <div class="badge badge-danger">Not delivered</div>
+                            <button type="button" class="btn btn-success" title="mark item as delivered"
+                                onclick="markdelivered('<%=_id%>','<%=redeemed%>','<%=driver_id%>')"><i
+                                    class="fa fa-check"></i></button>
+                            <%
+                                }
+                            %>
+                        </td>
+                        <td><% if(driver){%>
+                            <%= driver.name%>
+                            <%}%>
+                        </td>
+                        <td>
+                            <% if(delivered_time){%>
+                            <%= moment(delivered_time).format("h:mm:ss a") %>
+                            <%}%>
+                        </td>
+                        <td>
+                            <span class="btn btn-sm" data-toggle="popover" title="Address" data-content="<%=address_string%>"><i
+                                class="fa fa-list"></i></span>
+                        </td>
+                        <td>
+                            <% if(break_time){%>
+                            <%= break_time %>
+                            <%}%>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <%-include('./rejectordermodal.ejs')%>
+    <%-include('./approveordermodal.ejs')%>
+    <%-include('../shared/scripts.ejs')%>
+    <script>
+        $("#reports").addClass('active show-sub')
+        $("#driversales").addClass('active')
+        $('.fc-datepicker').datepicker({
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            dateFormat: 'yy-mm-dd'
+        });
+    </script>
+    <script>
+        function markdelivered(id, redeemed, driver_id) {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Do you want to mark this as delivered?',
+                buttons: {
+                    Update: function () {
+                        $.ajax({
+                            url: "<%=app_url%>/orders/list/delivered",
+                            data: {
+                                id,
+                                redeemed,
+                                driver_id
+                            },
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                var {
+                                    status,
+                                    message,
+                                    errors,
+                                    data
+                                } = data;
+                                errors = typeof errors != 'undefined' ? errors : []
+                                message = typeof message != 'undefined' ? message : null
+                                data = typeof data != 'undefined' ? data : {}
+
+                                if (status == true) {
+                                    toastr["success"](message);
+                                    setTimeout(function () {
+                                        window.location.reload();
+                                    }, 1000)
+                                } else {
+                                    if (errors.length > 0) {
+                                        toastr["error"](errors[0]);
+                                    } else if (message) {
+                                        toastr["error"](message);
+                                    }
+                                    $('.submitBtn').prop('disabled', false)
+                                }
+                            },
+                            error: function (error) {
+                                $('.submitBtn').prop('disabled', true)
+                            }
+                        });
+                    },
+                    Cancel: function () {
+                        $.alert('Canceled!');
+                    }
+                }
+            });
+        }
+
+        function markundelivered(id, redeemed, driver_id, address_id, shift_id) {
+            $.confirm({
+                title: 'Confirm!',
+                content: 'Do you want to mark this as undelivered?',
+                buttons: {
+                    Update: function () {
+                        $.ajax({
+                            url: "<%=app_url%>/orders/list/undelivered",
+                            data: {
+                                id,
+                                redeemed,
+                                driver_id,
+                                address_id,
+                                shift_id
+                            },
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                var {
+                                    status,
+                                    message,
+                                    errors,
+                                    data
+                                } = data;
+                                errors = typeof errors != 'undefined' ? errors : []
+                                message = typeof message != 'undefined' ? message : null
+                                data = typeof data != 'undefined' ? data : {}
+
+                                if (status == true) {
+                                    toastr["success"](message);
+                                    setTimeout(function () {
+                                        window.location.reload();
+                                    }, 1000)
+                                } else {
+                                    if (errors.length > 0) {
+                                        toastr["error"](errors[0]);
+                                    } else if (message) {
+                                        toastr["error"](message);
+                                    }
+                                    $('.submitBtn').prop('disabled', false)
+                                }
+                            },
+                            error: function (error) {
+                                $('.submitBtn').prop('disabled', true)
+                            }
+                        });
+                    },
+                    Cancel: function () {
+                        $.alert('Canceled!');
+                    }
+                }
+            });
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="popover"]').popover({
+                html: true,
+            });
+        });
+        $("#orders").addClass('active show-sub')
+        $("#allorders").addClass('active')
+        $("form#rejectForm").validate({
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            rules: {
+                price: {
+                    required: true
+                }
+            },
+            messages: {
+                price: {
+                    required: "Please enter offer price"
+                }
+            },
+            submitHandler: function (form) {
+                $('.submitBtn').prop('disabled', true)
+                var form = document.getElementById("rejectForm");
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/bulkorders/rejectorder",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function () {
+                                window.location.href = "<%=app_url%>/bulkorders/list";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function (error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+
+        $("form#approvalForm").validate({
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            rules: {
+                admin_review: {
+                    required: true
+                }
+            },
+            messages: {
+                admin_review: {
+                    required: "Please enter reason"
+                }
+            },
+            submitHandler: function (form) {
+                $('.submitBtn').prop('disabled', true)
+                var form = document.getElementById("approvalForm");
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/bulkorders/approveorder",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function () {
+                                window.location.href = "<%=app_url%>/bulkorders/list";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function (error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+    </script>
+    <script>
+        function renderRejectModal(order) {
+            var { _id } = order
+            $("#modal_order").val(_id)
+            $('#orderRejectModal').modal('toggle')
+        }
+
+        function renderApproveModal(order) {
+            var { _id } = order
+            $("#modal_order2").val(_id)
+            $('#orderApprovalModal').modal('toggle')
+        }
+        function rejectOrder(el) {
+            var order_id = $(el).data("order")
+            if (!order_id) {
+                toastr['error']("Could not find an order id")
+            }
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/getorder",
+                data: {
+                    order_id
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        order
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        console.log({ order })
+                        renderRejectModal(order)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+        }
+
+        function approveOrder(el) {
+            var order_id = $(el).data("order")
+            if (!order_id) {
+                toastr['error']("Could not find an order id")
+            }
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/getorder",
+                data: {
+                    order_id
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        order
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        console.log({ order })
+                        renderApproveModal(order)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+        }
+
+        function changeStatus() {
+            $('input[name="search"]').val('');
+            $('#searchForm').submit();
+        }
+    </script>
+    <%-include('../shared/footer-panel.ejs')%>

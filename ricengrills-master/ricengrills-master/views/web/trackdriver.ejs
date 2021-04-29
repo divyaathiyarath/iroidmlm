@@ -1,0 +1,142 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container_fluid google_map_fluid">
+    <div id="map" style="width: 100%;height:550px;"></div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script>
+    var db = firebase.firestore()
+    var initloc = {
+        lat: -25.344,
+        lng: 131.036
+    };
+
+    var icons = { //marker icons
+        van: ASSET_URL + "/public/icons/van.png",
+        van_lowstock: ASSET_URL + "/public/icons/van.png",
+        cp: ASSET_URL + "/public/icons/cp.png",
+        cp_lowstock: ASSET_URL + "/public/icons/cp.png",
+        user: ASSET_URL + "/public/icons/person.png",
+    };
+
+    var driver = JSON.parse(`<%-JSON.stringify(driverlocation)%>`)
+    var driver_name = `<%=driver_name%>`
+    var driver_id = `<%=driver_id%>`
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: driver,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: false,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi',
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#38414e' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#212a37' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#9ca5b3' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#746855' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#1f2835' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#f3d19c' }]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#2f3948' }]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#17263c' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#515c6d' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{ color: '#17263c' }]
+                }
+            ]
+        });
+
+        var icon = {
+            scaledSize: new google.maps.Size(50, 50),
+            labelOrigin: new google.maps.Point(30, 50),
+            url: icons.van,
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(11, 40),
+        };
+        van = new google.maps.Marker({
+            map,
+            icon,
+            draggable: false,
+            animation: google.maps.Animation.DROP,
+            position: driver,
+            label: {
+                color: 'white',
+                fontWeight: 'bold',
+                text: driver_name,
+            },
+        });
+
+        locations = db.collection('Location')
+        locations.where('driver', '==', driver_id).orderBy("timestamp", 'desc').limit(1).onSnapshot({
+            includeMetadataChanges: true
+        }, function (snapshot) {
+            snapshot.docs.forEach(doc => {
+                let data = doc.data()
+                var {
+                    lat,
+                    lng,
+                } = data
+                var position = new google.maps.LatLng(lat, lng)//location.latitude, location.longitude               
+                van.setPosition(position)
+            })
+        });
+    }
+
+</script>
+<script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places,directions&callback=initMap"></script>
+<%-include('./shared/footer-panel.ejs')%>

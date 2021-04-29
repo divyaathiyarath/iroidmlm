@@ -1,0 +1,287 @@
+<%- include('./shared/head-panel.ejs')%>
+<!-- Body part -->
+
+<div class="container-fluid login_fluid">
+    <div class="container">
+        <div class="row jcc">
+            <div class="col-md-7">
+                <form action="javascript:;" id="mainForm">
+                    <div class="account_section partner__form">
+                        <h3 class="headding"> Be Our Delivery Partner </h3>
+                        <div class="inner__bodp">
+                            <p class=""> A person can register themself to become a Delivery Partner via RiceNGrills
+                                website. </p>
+                            <p class=""> Requirement for becoming a delivery partner </p>
+                            <ul>
+                                <li> You must be 18 years or older. </li>
+                                <li> Police Clearance and background check (If Selected) </li>
+                                <li> Own a smartphone. </li>
+                                <li> ABN </li>
+                                <li> Have a car which is 20 years or less. </li>
+                                <li> Driver's license approved in Victoria with at least one year of driving experience.
+                                </li>
+                                <li> Valid insurance and registration </li>
+                                <li> Complete our training in Person. </li>
+                            </ul>
+                            <hr>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 llabel"> Name <span>*</span></div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="input-name" placeholder="Enter your name"
+                                    name="name">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Email <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="email" class="form-control" id="input-email" placeholder="Enter Email "
+                                    name="email">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Mobile(Without code) <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="number" class="form-control" id="input-mobile"
+                                    placeholder="Enter Mobile Number " name="mobile">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Address<span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <textarea class="form-control" id="input-address" placeholder="Enter Address "
+                                    name="address"> </textarea>
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Driving License Number <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" id="input-lisence_number"
+                                    placeholder="Enter driving license number" name="license_number">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Driving License Image <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="file" name="license" id="file-license">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Driving Expiry Date <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control date_single" id="input-driving_expiry"
+                                    placeholder="Enter date" name="license_expiry">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Vehicle Registration Number <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" id="input-registration_number"
+                                    placeholder="Enter Vehicle Registration Number" name="registration_number">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Vehicle Insurance <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="file" name="insurance" id="input-insurance">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Vehicle Insurance Expiry Date <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" id="input-insurance_validity" class="form-control date_single"
+                                    placeholder="Pick Your Date" name="insurance_validity">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> ABN <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" id="input-abn_number" placeholder="Enter ABN"
+                                    name="abn_number">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Police clearance certificate (If Selected) </div>
+                            <div class="col-md-8 mt-4">
+                                <input type="file" name="police_clearance" id="file-police_clearance">
+                            </div>
+
+                            <div class="col-md-8 mt-4 llabel">
+                                <label class="ckbox">
+                                    <input type="checkbox" name="age_confirm" onchange="checkConfirmations()">
+                                    <span>Confirm your age is above 18 years</span>
+                                </label>
+                            </div>
+                            <div class="col-md-8 mt-4 llabel">
+                                <label class="ckbox">
+                                    <input type="checkbox" name="car_confirm" onchange="checkConfirmations()">
+                                    <span>Confirm your car is below 20 years</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <button class="btn btn-red mr-3 submitBtn" disabled> Submit Form </button>
+                            <button class="btn btn-red desable"> Cancel </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<!-- scripts here -->
+<script>
+    // // Datepicker
+    // $('.fc-datepicker').datepicker({
+    //     showOtherMonths: true,
+    //     selectOtherMonths: true,
+    //     dateFormat: 'yy-mm-dd'
+    // });
+
+    function checkConfirmations() {
+        if ($('input[name="car_confirm"]').is(":checked") && $('input[name="age_confirm"]').is(":checked")) {
+            $(".submitBtn").attr("disabled", false)
+        } else {
+            $(".submitBtn").attr("disabled", true)
+        }
+    }
+
+    $('.date_single').datepicker({
+        multidate: false,
+        format: 'yyyy-mm-dd',
+        clearBtn: true
+    });
+
+    // Submit login form
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            name: {
+                required: true,
+                maxlength: 50,
+                lettersonly: true,
+            },
+            email: {
+                required: true,
+                email: true,
+                maxlength: 100
+            },
+            mobile: {
+                required: true,
+                minlength : 8,
+                maxlength : 10,
+                min: 1
+            },
+            address: {
+                required: true,
+                maxlength: 100
+            },
+            license_number: {
+                required: true,
+                maxlength: 11
+            },
+            license: {
+                required: true
+            },
+            license_expiry: {
+                required: true
+            },
+            insurance: {
+                required: true
+            },
+            insurance_validity: {
+                required: true
+            },
+            police_clearance: {
+                required: false
+            },
+            abn_number: {
+                required: true,
+                maxlength: 11
+            },
+            registration_number: {
+                required: true,
+                maxlength: 12
+            }
+        },
+        messages: {
+            name: {
+                required: "Name is required",
+                lettersonly: "Name must be letters only"
+            },
+            email: {
+                required: "Email is required",
+                email: "Email is not valid"
+            },
+            mobile: {
+                required: "Mobile is required",
+                minlength : "Invalid mobile number",
+                maxlength : "Invalid mobile number",
+                min: "Invalid mobile number",
+            },
+            address: {
+                required: "Address is required"
+            },
+            license_number: {
+                required: "License number is required"
+            },
+            license: {
+                required: "License is required"
+            },
+            license_expiry: {
+                required: "License expiry date is required"
+            },
+            police_clearance: {
+                required: "Police clearance certificate is required"
+            },
+            insurance: {
+                required: "Insurance is required"
+            },
+            insurance_validity: {
+                required: "Insurance validity is required"
+            },
+            abn_number: {
+                required: "ABN Number"
+            },
+            registration_number: {
+                required: "Vehicle registration number is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = new FormData(form);
+            $.ajax({
+                url: "<%=app_url%>/beourdpartner",
+                data,
+                type: "POST",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = "<%=app_url%>";
+                        }, 6000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

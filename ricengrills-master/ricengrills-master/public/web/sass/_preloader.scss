@@ -1,0 +1,32 @@
+ 
+
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+  }
+  
+  #status {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-image: url(../images/loader.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: auto;
+    background-size: 100%;
+    right: 0;
+    bottom: 0;
+  }
+  
+  .grdnt-blue:not(.overly) {
+    // @include greadent-diagonal($color1, $color2);
+    background-color: #fff;
+  }
+  
+   

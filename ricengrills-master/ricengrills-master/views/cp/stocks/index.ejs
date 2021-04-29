@@ -1,0 +1,61 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Stock</span>
+        </nav>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-left bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                    Date:<%= moment().format('MMMM Do YYYY, h:mm:ss a'); %>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>product name</th>
+                    <th>quantitiy</th>
+                    <th>Third Party Sales</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% stocks.forEach((product,index)=>{ %>
+
+                    <tr>
+                        <td><%= index %></td>
+                        <td>
+                            <%= product.name %>
+                        </td>
+                        <td><%= product.quantity %></td>
+                        <td><input type="number" class="form-control">
+                            <div>
+                                <button class=" btn btn-primary">Enter</button>
+                            </div>
+                        </td>
+                        <td><a href="<%=app_url%>/stock/new" type="reset" class="btn btn-danger pd-y-13 pd-x-10 bd-0 mg-md-r-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">
+                            <i class="fa fa-plus"></i> Request  Stock
+                        </a></td>
+                    </tr>
+
+               <% }) %>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+<%-include('../shared/scripts.ejs')%>
+<%-include('../shared/footer-panel.ejs')%>

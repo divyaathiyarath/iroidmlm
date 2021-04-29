@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Meta -->
+    <meta name="description" content="Premium Quality and Responsive UI for Dashboard." />
+    <meta name="author" content="ThemePixels" />
+
+    <title>riceNgrills</title>
+
+    <!-- vendor css -->
+    <link href="<%=asset_url%>/public/lib/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link href="<%=asset_url%>/public/lib/Ionicons/css/ionicons.css" rel="stylesheet" />
+    <link href="<%=asset_url%>/public/lib/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet" />
+    <link href="<%=asset_url%>/public/lib/jquery-switchbutton/jquery.switchButton.css" rel="stylesheet" />
+
+    <!-- Bracket CSS -->
+    <link rel="stylesheet" href="<%=asset_url%>/public/css/bracket.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />    
+    <link href="<%=asset_url%>/public/lib/SpinKit/spinkit.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="<%=asset_url%>/public/css/ricengrills.css" />
+</head>
+
+<body>
+    <!-- ########## START: LEFT PANEL ########## -->
+    <div class="br-logo">
+        <a href=""><span>[</span>riceNgrills<span>]</span></a>
+    </div>
+    <div class="br-sideleft overflow-y-auto">
+        <label class="sidebar-label pd-x-15 mg-t-20">Navigation</label>
+        <div class="br-sideleft-menu">
+            <!-- <a href="<%=app_url%>/dashboard" class="br-menu-link">
+                <div class="br-menu-item">
+                    <i class="menu-item-icon icon ion-ios-home-outline tx-22"></i>
+                    <span class="menu-item-label">Dashboard</span>
+                </div>
+                menu-item
+            </a> -->
+            <a href="<%=app_url %>/stock" class="br-menu-link">
+              <div class="br-menu-item">
+                <i class="menu-item-icon icon icon ion-filing tx-24"></i>
+                <span class="menu-item-label">Stocks</span>
+              </div>
+              <!-- menu-item -->
+          </a>
+          <a href="<%=app_url %>/orders" class="br-menu-link">
+            <div class="br-menu-item">
+              <i class="menu-item-icon icon icon ion-pizza tx-24"></i>
+              <span class="menu-item-label">Orders</span>
+            </div>
+            <!-- menu-item -->
+        </a>
+            <!-- <a href="<%=app_url%>/orders/download" class="br-menu-link">
+                <div class="br-menu-item">
+                    <i class="menu-item-icon icon ion-person-stalker tx-22"></i>
+                    <span class="menu-item-label">Reports</span>
+                </div>
+                menu-item
+            </a> -->
+            <a href="<%=app_url%>/stock/log" class="br-menu-link">
+              <div class="br-menu-item">
+                  <i class="menu-item-icon icon ion-person-stalker tx-22"></i>
+                  <span class="menu-item-label">Sale Logs</span>
+              </div>
+              <!-- menu-item -->
+          </a>
+            <!-- br-menu-link -->
+            <!-- <a href="#" class="br-menu-link">
+                <div class="br-menu-item">
+                    <i class="menu-item-icon icon icon ion-flag tx-24"></i>
+                    <span class="menu-item-label">Collection points</span>
+                    <i class="menu-item-arrow fa fa-angle-down"></i>
+                </div>
+                menu-item
+            </a>
+            br-menu-link
+            <ul class="br-menu-sub nav flex-column">
+                <li class="nav-item">
+                    <a href="<%=app_url%>/collectionpoints" class="nav-link">All Collection Points</a>
+                </li>
+                <li class="nav-item">
+                    <a href="<%=app_url%>/collectionpoints/new" class="nav-link">New Collection Point</a>
+                </li>
+            </ul> -->
+            <!-- br-menu-link -->
+        </div>
+        <!-- br-sideleft-menu -->
+
+        <!-- <label class="sidebar-label pd-x-15 mg-t-25 mg-b-20 tx-info op-9">Information Summary</label>
+
+        <div class="info-list">
+            <div class="d-flex align-items-center justify-content-between pd-x-15">
+                <div>
+                    <p class="tx-10 tx-roboto tx-uppercase tx-spacing-1 tx-white op-3 mg-b-2 space-nowrap">
+                        Memory Usage
+                    </p>
+                    <h5 class="tx-lato tx-white tx-normal mg-b-0">32.3%</h5>
+                </div>
+                <span class="peity-bar" data-peity='{ "fill": ["#336490"], "height": 35, "width": 60 }'>8,6,5,9,8,4,9,3,5,9</span
+          >
+        </div> -->
+        <!-- d-flex -->
+
+        <!-- <div
+          class="d-flex align-items-center justify-content-between pd-x-15 mg-t-20"
+        >
+          <div>
+            <p
+              class="tx-10 tx-roboto tx-uppercase tx-spacing-1 tx-white op-3 mg-b-2 space-nowrap"
+            >
+              CPU Usage
+            </p>
+            <h5 class="tx-lato tx-white tx-normal mg-b-0">140.05</h5>
+          </div>
+          <span
+            class="peity-bar"
+            data-peity='{ "fill": ["#1C7973"], "height": 35, "width": 60 }'
+            >4,3,5,7,12,10,4,5,11,7</span
+          >
+        </div> -->
+        <!-- d-flex -->
+
+        <!-- <div
+          class="d-flex align-items-center justify-content-between pd-x-15 mg-t-20"
+        >
+          <div>
+            <p
+              class="tx-10 tx-roboto tx-uppercase tx-spacing-1 tx-white op-3 mg-b-2 space-nowrap"
+            >
+              Disk Usage
+            </p>
+            <h5 class="tx-lato tx-white tx-normal mg-b-0">82.02%</h5>
+          </div>
+          <span
+            class="peity-bar"
+            data-peity='{ "fill": ["#8E4246"], "height": 35, "width": 60 }'
+            >1,2,1,3,2,10,4,12,7</span
+          >
+        </div> -->
+        <!-- d-flex -->
+
+        <!-- <div
+          class="d-flex align-items-center justify-content-between pd-x-15 mg-t-20"
+        >
+          <div>
+            <p
+              class="tx-10 tx-roboto tx-uppercase tx-spacing-1 tx-white op-3 mg-b-2 space-nowrap"
+            >
+              Daily Traffic
+            </p>
+            <h5 class="tx-lato tx-white tx-normal mg-b-0">62,201</h5>
+          </div>
+          <span
+            class="peity-bar"
+            data-peity='{ "fill": ["#9C7846"], "height": 35, "width": 60 }'
+            >3,100,7,9,2,3,4,5,2</span
+          >
+        </div> -->
+        <!-- d-flex -->
+      </div>
+      <!-- info-lst -->
+
+      <br />
+    </div>
+    <!-- br-sideleft -->
+    <!-- ########## END: LEFT PANEL ########## -->
+
+    <!-- ########## START: HEAD PANEL ########## -->
+    <div class="br-header">
+      <div class="br-header-left">
+        <div class="navicon-left hidden-md-down">
+          <a id="btnLeftMenu" href=""><i class="icon ion-navicon-round"></i></a>
+        </div>
+        <div class="navicon-left hidden-lg-up">
+            <a id="btnLeftMenuMobile" href=""><i class="icon ion-navicon-round"></i
+          ></a>
+        </div>
+        <!-- <div class="input-group hidden-xs-down wd-170 transition">
+                <input id="searchbox" type="text" class="form-control" placeholder="Search">
+                <span class="input-group-btn">
+                  <button class="btn btn-secondary" type="button"><i class="fa fa-search"></i></button>
+                </span>
+            </div> -->
+            <!-- input-group -->
+        </div>
+        <!-- br-header-left -->
+        <div class="br-header-right">
+          <nav class="nav">
+          <div class="dropdown">
+            <a href="" class="nav-link nav-link-profile" data-toggle="dropdown">
+              <span class="logged-name hidden-md-down"><%=session.name%></span>
+              <img
+                src="<%=session.image%>"
+                class="wd-32 rounded-circle adminProfilePic"
+                alt=""
+              />
+              <span class="square-10 bg-success"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-header wd-200">
+              <ul class="list-unstyled user-profile-nav">
+                <li>
+                  <a href="<%=app_url%>/profile"
+                    ><i class="icon ion-ios-person"></i> Edit Profile
+                  </a>
+                </li>
+                <li>
+                  <a href="<%=app_url%>/logout"
+                    ><i class="icon ion-power"></i> Sign Out</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <!-- dropdown-menu -->
+          </div>
+          <!-- dropdown -->
+        </nav>
+        <div class="navicon-right">
+          <a href="<%=app_url%>/logout" class="pos-relative">
+            <i class="icon ion-power"></i>
+          </a>
+        </div>
+        <!-- navicon-right -->
+      </div>
+      <!-- br-header-right -->
+    </div>
+    <!-- br-header -->
+    <!-- ########## END: HEAD PANEL ########## -->
+  </body>
+</html>

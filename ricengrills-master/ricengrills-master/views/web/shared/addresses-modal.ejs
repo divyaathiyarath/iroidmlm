@@ -1,0 +1,26 @@
+<div class="modal fade" id="addresses-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="col-sm-12">
+                    <h5 class="headding"> Change Address </h5>
+                    <% addresses.forEach(address=>{
+                        var { _id, type, address_line1, address_line2, address_type, appartment, contact_person, house_flat_no, landmark, to_reach } = address
+                        %>
+                    <div class="address_card mb-1" id="activeAddressCarddd">
+                        <u> <%= address_type %> </u>
+                        <p> <%= address_line1 %></p>
+                        <p> <%= house_flat_no %>,<%=appartment%> </p>
+                        <p> Street Name : <%=landmark%></p>
+                        <p> Reach Location : <%= to_reach %></p>
+                        <div class="btn btn-dark btn-sm edit-btn" data-address="<%=_id%>"
+                            onclick="deliverToThisLocation(this)">
+                            Deliver to this location
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

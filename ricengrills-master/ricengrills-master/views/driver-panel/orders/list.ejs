@@ -1,0 +1,116 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Orders</span>
+        </nav>
+    </div>
+    <div class="br-pagebody" id="cp-list">
+        <table class="table table-bordered bg-white mg-t-20">
+            <thead>
+                <tr>
+                    <th>Collection Point</th>
+                    <th>Address</th>
+                    <th>Requested Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody class="list"></tbody>
+        </table>
+        <ul class="pagination"></ul>
+        <style>
+            .pagination {
+                display: block !important;
+                text-align: center;
+            }
+
+            .pagination>li {
+                display: inline-block;
+            }
+
+            .pagination>li>a {
+                background-color: #dc3545c9;
+                padding: 4px 8px 4px 8px;
+                margin-left: 5px;
+                border-radius: 4px;
+                color: white;
+            }
+        </style>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    var shift_id = '<%=current_shift%>'
+    var options = {
+        valueNames: ['item_cp', 'item_address', 'products', 'action', { name: 'cp_id', selector: '.cp_id', attr: 'data-cp_id' }],
+        page: 20,
+        pagination: true,
+        item: `<tr class="cp-item"><td class="item_cp"></td><td class="item_address"></td><td class="products"></td><td class="action"></td></tr>`
+    };
+    var cp_list = new List('cp-list', options);
+
+    function renderCollectionPointTable(collectionpoints) {
+        cp_list.clear()
+        $.each(collectionpoints, function (key, cp) {
+            var { _id, products, cp_stocks, suburb } = cp
+            var productsHtml = ""
+            if (typeof products != 'undefined' && products.length > 0) {
+                $.each(products, function (key, product) {
+                    var { name, quantity, id } = product
+                    productsHtml += `<span class="badge badge-pill badge-primary ml-1">[${quantity}] ${name}</span>`
+                })
+            }
+            var action = ""
+            if (cp_stocks && cp_stocks.length <= 0) {
+                action = `<a class="btn btn-primary text-white btn-sm cp_id" data-cp_id="${_id}" onclick="deliverOrder(this)"><i class="fa fa-list"></i></a>`
+            }else{
+                action = "<span class='badge badge-success'>Delivered</span>"
+            }
+            cp_list.add({
+                'cp_id': cp._id,
+                'item_cp': cp.name,
+                'item_address': `${cp.address_line1} <br/>Suburb: <b>${suburb}</b>`,
+                'products': productsHtml,
+                'action': action
+            })
+        })
+    }
+    function getCollectionPoints() {
+        $.ajax({
+            url: "<%=app_url%>/collectionpointwithstocks",
+            data: {
+                shift_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    cps
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                console.trace({ cps })
+                renderCollectionPointTable(cps)
+            }
+        });
+        return false
+    }
+    getCollectionPoints()
+
+    function deliverOrder(el) {
+        var cp_id = $(el).data('cp_id')
+        if (cp_id) {
+            window.location.href = APP_URL + "/orders/submit/" + cp_id
+        } else {
+            toastr['error']("Could not find order id")
+        }
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

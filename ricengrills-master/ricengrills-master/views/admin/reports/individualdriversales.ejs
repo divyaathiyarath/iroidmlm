@@ -1,0 +1,62 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Reports</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Individual Sales Report</h4>
+    </div>
+    <div class="br-pagebody">
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Driver Name</th>
+                    <th>User Name</th>
+                    <th>Booking Id</th>
+                    <th>Products</th>
+                    <th>Suburb</th>
+                    <th>Address</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% 
+                  orders.forEach((order,index)=>{
+                    ++index
+                    let {_id,booking_id,suburb,address,delivered_time,user,driver,products} = order
+                    let products_html = ""
+                    if(products){
+                        products.forEach(product=>{
+                            products_html += `<span class="badge badge-success">${product.name + " " + product.quantity}</span>`
+                        })
+                    }
+                    
+                %>
+                    <tr>
+                        <td><%= index %></td>
+                        <td><%=driver.name%></td>
+                        <td><%=user.name%></td>
+                        <td><%= booking_id%></td>
+                    <td>
+                       <%-products_html%>
+                    </td>
+                        <td><%=suburb.name%></td>
+                        <td><%=address.address_line1%></td>
+                        <td><%=moment(delivered_time).format("MMM Do YY")%></td>
+                        <td><%=moment(delivered_time).format("h:mm:ss a")%></td>
+                    </tr>
+                <%})%>
+            
+            </tbody>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<%-include('../shared/footer-panel.ejs')%>

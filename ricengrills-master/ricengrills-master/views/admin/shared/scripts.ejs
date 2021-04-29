@@ -1,0 +1,94 @@
+<script src="<%=asset_url%>/public/lib/jquery/jquery.js">
+</script>
+<script src="<%=asset_url%>/public/lib/popper.js/popper.js"></script>
+<script src="<%=asset_url%>/public/lib/bootstrap/bootstrap.js"></script>
+<script src="<%=asset_url%>/public/lib/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+<script src="<%=asset_url%>/public/lib/moment/moment.js"></script>
+<script src="<%=asset_url%>/public/lib/jquery-ui/jquery-ui.js"></script>
+<script src="<%=asset_url%>/public/lib/jquery-switchbutton/jquery.switchButton.js"></script>
+<script src="<%=asset_url%>/public/lib/peity/jquery.peity.js"></script>
+<script src="<%=asset_url%>/public/lib/jquery-toggles/toggles.min.js"></script>
+
+<script src="<%=asset_url%>/public/js/bracket.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.1/dist/jquery.validate.min.js"></script>
+<script src="<%=asset_url%>/public/lib/select2/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+<script>
+    var ASSET_URL = '<%=asset_url%>'
+    var APP_URL = '<%=app_url%>'
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.0.0/firebase-messaging.js"></script>
+
+
+<script type="text/javascript">
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/admin-firebase.js', { APP_URL }).then(function (registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function (err) {
+                // registration failed :(
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+
+    var firebaseConfig = {
+        apiKey: "AIzaSyA2fLz-V4fg0kFTpZwVzhydlgg7Z4lyVxU",
+        authDomain: "risengrills.firebaseapp.com",
+        databaseURL: "https://risengrills.firebaseio.com",
+        projectId: "risengrills",
+        storageBucket: "risengrills.appspot.com",
+        messagingSenderId: "438493239080",
+        appId: "1:438493239080:web:1794421360a26a7eae221d",
+        measurementId: "G-5VQ97JP8J4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    // function sendTokenToServer(currentToken) {
+    //     fetch(APP_URL + "/update_device_token", {
+    //         method: 'post',
+    //         headers: {
+    //             "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+    //         },
+    //         body: `token=${currentToken}`
+    //     })
+    //         .then(function (data) {
+    //             console.log('Request succeeded with JSON response', data);
+    //         })
+    //         .catch(function (error) {
+    //             console.log('Request failed', error);
+    //         });
+    // }
+
+    // function updateUIForPushEnabled(currentToken) {
+    //     console.log({ currentToken })
+    // }
+
+    // function showToken(message) {
+    //     console.log(message)
+    // }
+
+    // messaging.getToken({ vapidKey: 'BLO7tyt_Oyb4bOW32CWxEAXbx3J383VKs8Iz7WAlqbCrW26lxUsswpavK8FEnV9XN6EJgczbRmG7mJ-C-uhTCVk' }).then((currentToken) => {
+    //     if (currentToken) {
+    //         sendTokenToServer(currentToken);
+    //         updateUIForPushEnabled(currentToken);
+    //     } else {
+    //         console.log('No registration token available. Request permission to generate one.');
+    //         updateUIForPushPermissionRequired();
+    //         sendTokenToServer(null);
+    //     }
+    // }).catch((err) => {
+    //     console.log('An error occurred while retrieving token. ', err);
+    //     showToken('Error retrieving registration token. ', err);
+    //     sendTokenToServer(null);
+    // });
+
+</script>

@@ -1,0 +1,154 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Stock</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+
+<div class="br-pagebody">
+
+    <form action="javascript:;" id="mainForm">
+        <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80">
+            <div class="col-md-6">
+                <% if(can_request_excess_stock){ %>
+                    <a href="<%=app_url%>/stock/new"  class="btn btn-info tx-uppercase tx-11" style="float: right;">
+                        <i class="fa fa-plus"></i> Request Excess Stock
+                    </a>
+                <% } %>
+            </div>
+        </div>    
+        <table class="table table-grey table-bordered bg-white mb-0" style="border-bottom: solid thin lightgrey;">
+            <thead class="thead-colored thead-info">
+                <tr>
+                    <th>id</th>
+                    <th>product name</th>
+                    <th>In hand</th>
+                    <th>Available Stock</th>
+                    <th>Price</th>
+                    <th>Third Party Sales</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                    let i = 0
+                    products.forEach(product=>{
+                    i++
+                    let {name,price,stock,_id,available_stock} = product
+                %>
+                            <tr>
+                                <td><%= i %></td>
+                                <td id='productname'><%=name %></td>
+                                <td>
+                                    <%=stock %>
+                                </td>
+                                <td>
+                                    <%=available_stock%>
+                                </td>
+                                <td id="productprice<%=i%>">
+                                    <%=price %>
+                                </td>
+                                <td>
+                                    <input type="number" min="1" class="form-control check-stock" placeholder="Enter quantity"  name="stock[<%=_id%>]" id="increment<%=i%>">                                                    
+                                </td>
+                            </tr>
+                    <% }) %>    
+                    <% if(!can_request_excess_stock){ %>
+                        <tr>
+                            <td colspan="6">
+                                <div class="alert alert-warning">No stock available</div>
+                            </td>
+                        </tr>
+                    <% } %> 
+            </tbody>
+        </table>
+        <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80">
+            <div class="col-md-6">
+                <% if(can_request_excess_stock){ %>
+                <button type="submit" class="btn btn-success submitBtn" style="float: right;">
+                    <span style="line-height: 20px;">Submit Order</span> 
+                    <div class="sk-wave m-0 m-0 submitLoader" style="height: 20px;text-align:center;font-size:4px;float:right; display: none;">
+                        <div class="sk-rect sk-rect1 bg-gray-800"></div>
+                        <div class="sk-rect sk-rect2 bg-gray-800"></div>
+                        <div class="sk-rect sk-rect3 bg-gray-800"></div>
+                        <div class="sk-rect sk-rect4 bg-gray-800"></div>
+                        <div class="sk-rect sk-rect5 bg-gray-800"></div>
+                    </div>
+                </button>
+                <% } %>
+            </div>
+        </div>
+    </form>
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+
+<script>
+    var shift_id = '<%=shift_id%>'
+    $.extend(jQuery.validator.messages, {
+        remote: "No sufficient stock",
+    });
+
+    $.validator.addMethod("stock_check", $.validator.methods.remote, "No sufficient stock");
+    $.validator.addClassRules("check-stock", {
+        stock_check: {
+            url: APP_URL + '/check_stock?shift_id='+shift_id
+        }
+    })
+
+
+    $("form#mainForm").validate({
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            submitHandler: function (form) {
+                $('.submitBtn').attr('disabled', true)
+                $('.submitBtn .submitLoader').show()
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/stock/update",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function () {
+                                window.location.href = "<%=app_url%>/stock";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                            $('.submitBtn .submitLoader').hide()
+                        }
+                    },
+                    error: function (error) {
+                        $('.submitBtn').attr('disabled', false)
+                        $('.submitBtn .submitLoader').hide()
+                    }
+                });
+                return false;
+            }
+        });            
+</script>
+
+<%-include('../shared/footer-panel.ejs')%>
+

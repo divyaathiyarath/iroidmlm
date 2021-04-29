@@ -1,0 +1,255 @@
+<%-include('./shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard"> <%=SITE_NAME%> </a>
+            <span class="breadcrumb-item active">Profile</span>
+        </nav>
+    </div><!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h4 class="tx-gray-800 mg-b-5">Profile</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <div class="br-section-wrapper">
+            <div class="form-layout form-layout-1">
+                <form action="javascript:;" id="mainForm">
+                    <div class="row mg-b-25">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Name: <span class="tx-danger">*</span></label>
+                                <input class="form-control" type="text" name="name" value="<%=admin.name%>"
+                                    placeholder="Enter Name">
+                            </div>
+                        </div><!-- col-4 -->
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Email: <span class="tx-danger">*</span></label>
+                                <input class="form-control" type="email" name="email" value="<%=admin.email%>"
+                                    placeholder="Enter Email ID">
+                            </div>
+                        </div><!-- col-4 -->
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Mobile Number: </label>
+                                <input class="form-control" type="text" name="mobile" value="<%=admin.mobile%>"
+                                    placeholder="Enter Mobile Number">
+                            </div>
+                        </div><!-- col-4 -->
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Profile Image: <span
+                                        class="tx-danger">*</span></label>
+                                <label class="custom-file" style="width: 100%;">
+                                    <input type="file" id="file" name="profilepic" class="custom-file-input">
+                                    <span class="custom-file-control"></span>
+                                </label>
+                            </div>
+                        </div><!-- col-6 -->
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <div class="imageDiv">
+                                    <img src="<%=admin.image%>" alt="Profile Pic" id="profilePic" class="img img-thumbnail"
+                                        width="150px">
+                                </div>
+                            </div>
+                        </div><!-- col-6 -->
+                    </div><!-- row -->
+
+                    <div class="form-layout-footer">
+                        <button type="submit" class="btn btn-info submitBtn">Update</button>
+                        <button type="reset" class="btn btn-secondary">Cancel</button>
+                    </div><!-- form-layout-footer -->
+                </form>
+            </div><!-- form-layout -->
+        </div><!-- br-section-wrapper -->
+    </div><!-- br-pagebody -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h4 class="tx-gray-800 mg-b-5">Reset Password</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <div class="br-section-wrapper">
+            <div class="form-layout form-layout-1">
+                <form action="javascript:;" id="resetPasswordForm">
+                    <div class="row mg-b-25">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Password: <span class="tx-danger">*</span></label>
+                                <input class="form-control" type="password" id="password" name="password" placeholder="Enter Password">
+                            </div>
+                        </div><!-- col-6 -->
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Confirm Password: <span class="tx-danger">*</span></label>
+                                <input class="form-control" type="password" name="cpassword" placeholder="Enter Confirm Password">
+                            </div>
+                        </div><!-- col-6 -->
+                    </div><!-- row -->
+
+                    <div class="form-layout-footer">
+                        <button type="submit" class="btn btn-info submitBtn">Update</button>
+                        <button type="reset" class="btn btn-secondary">Cancel</button>
+                    </div><!-- form-layout-footer -->
+                </form>
+            </div><!-- form-layout -->
+        </div><!-- br-section-wrapper -->
+    </div><!-- br-pagebody -->
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#profilePic').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    $("#file").change(function () {
+        readURL(this);
+    });
+
+    $("input[name='profilepic']").on('change',function(){
+        //get the file name
+        var fileName = $(this).val();
+        //replace the "Choose a file" label
+        $(this).next('.custom-file-control').html(fileName);
+    })
+
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            name: {
+                required: true
+            },
+            email: {
+                required: true,
+                email: true
+            },
+            mobile: {
+                number: true,
+            }
+        },
+        messages: {
+            name: {
+                required: 'Name is required'
+            },
+            email: {
+                required: 'Email is required',
+                email: 'Invalid email'
+            },
+            mobile: {
+                number: 'Invalid mobile number'
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = new FormData(form);
+            $.ajax({
+                url: "<%=app_url%>/profile/update",
+                data,
+                type: "POST",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+                    console.log(data)
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.reload()
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+
+
+    $("form#resetPasswordForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            password: {
+                required: true,
+            },
+            cpassword: {
+                required: true,
+                equalTo: '#password'
+            }
+        },
+        messages: {
+            password: {
+                required: 'Password is required'
+            },
+            cpassword: {
+                required: 'Confirm password is required'
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtnPwd').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/profile/update-password",
+                data: $("#resetPasswordForm").serialize(),
+                type: "POST",
+                dataType: "JSON",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+                    console.log(data)
+                    if (status == true) {
+                        toastr["success"](message);
+                        $('#resetPasswordForm').trigger('reset')
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtnPwd').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtnPwd').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

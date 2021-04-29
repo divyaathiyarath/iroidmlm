@@ -1,0 +1,144 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">New Stock Request</span>
+        </nav>
+    </div>
+    <div class="br-pagebody" id="stock-list">
+        <form action="" style="border-bottom: solid thin lightgrey;">
+            <div class="bg-gray-100 ht-md-80  pd-t-20 mg-t-10">
+                <div class="pd-y-20 pd-md-y-0 col-md-12">
+                    Date:<b><%= moment().format('YYYY-MM_DD'); %></b>
+                    &nbsp;&nbsp;&nbsp;
+                    Shift:<b><%= shift %></b>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white mb-0">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>product name</th>
+                    <th>quantitiy</th>
+                    <th>Request quantity</th>
+                </tr>
+            </thead>
+            <tbody class="list"></tbody>
+        </table>
+        <form action="" style="border-bottom: solid thin lightgrey;">
+            <div class="bg-gray-100 ht-md-80  pd-t-20">
+                <div class="pd-y-20 pd-md-y-0 col-md-12">
+                    <a href="javascript:;" type="reset" class="btn btn-danger  tx-uppercase"
+                        style="float: right !important;" onclick="submitRequest(this)">
+                        Submit Request
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script type="text/javascript">
+    var shift_id = '<%=current_shift%>'
+    var options = {
+        valueNames: ['sid', 'name', 'quantity'],
+        item: `<tr><td class="sid"></td><td class="name"></td><td class="quantity"></td><td><input class="request_qty" type="number"/></td></tr>`,
+    };
+    var stock_list = new List('stock-list', options);
+    function renderStock(stocks) {
+        stock_list.clear()
+        $.each(stocks, function (key, stock) {
+            stock_list.add({
+                sid: ++key,
+                name: stock.name,
+                quantity: stock.quantity
+            })
+        })
+    }
+    function getStockDetails() {
+        $.ajax({
+            url: "<%=app_url%>/current-stocks",
+            data: {
+                shift_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    stocks
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                if (status == true) {
+                    renderStock(stocks)
+                }
+            }
+        });
+        return false
+    }
+    getStockDetails()
+
+    function submitRequest(el) {
+        $(el).attr('disabled', true)
+        items = stock_list.get()
+        var products = []
+        var total_item_count = 0
+
+        $.each(items, function (key, item) {
+            var values = item.values()
+            var {
+                product_id
+            } = values
+            var count = $(`.request_qty:eq(${key})`).val()
+            if (count && count > 0) {
+                products.push({
+                    product_id,
+                    count
+                })
+                total_item_count = total_item_count + +count
+            }
+        })
+
+        if (total_item_count == 0) {
+            toastr['error']('Please fill any products to request')
+            return false
+        }
+        $.confirm({
+            title: "",
+            content: function () {
+                var self = this;
+                self.setContent('Checking callback flow');
+                return $.ajax({
+                    url: APP_URL + "/stock/new",
+                    dataType: 'json',
+                    method: 'post'
+                }).done(function (response) {
+                    self.close()
+                    toastr['success']('Successfully send stock update request')
+                    setTimeout(function () {
+                        window.location.href = APP_URL + "/stocks"
+                    }, 1000)
+                }).fail(function () {
+                    self.close()
+                    toastr['error']('Could not save request')
+                }).always(function () {
+                    console.log('Request called')
+                });
+            },
+            contentLoaded: function (data, status, xhr) {
+                console.log("here")
+            }
+        });
+    }
+
+</script>
+<%-include('../shared/footer-panel.ejs')%>

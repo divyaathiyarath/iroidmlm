@@ -1,0 +1,130 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Reports</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Order Sales Report</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-10">
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Driver name/Booking id/suburb">
+                    <input class="form-control fc-datepicker ml-2" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/reports/orders" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                        <a class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 mg-md-r-10 tx-uppercase tx-11 tx-spacing-2"
+                        href="<%=app_url%>/reports/ordersexport/export?&from_date=<%=from_date%>&to_date=<%=to_date%>"
+                        class="text-danger" title="Export to excel">
+                        <i class="fa fa-file"></i> 
+                </a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totalQuantity.forEach((product,index)=>{ %>
+                    <tr>
+                        <td><%= index %></td>
+                        <td><%=product.product_name%></td>
+                        <td><%=product.tot_qty%></td>
+                    </tr>
+                <%})%>
+            </tbody>
+        </table>
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Order Id</th>
+                        <th>User Name</th>
+                        <th>Order Type</th>
+                        <th>Delivery Driver</th>
+                        <th>Suburb</th>
+                        <th>Address</th>
+                        <th>Delivery Date</th>
+                        <th>Delivery Time</th>
+                        <th>Delivery Status</th>
+                        <th>products</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                        orders.forEach((order,index)=>{
+                            ++index
+                            let{redeemed,booking_type,booking_id,delivered_time,user,address,suburb,driver,shift,products} = order
+                            
+                    %>
+                    <tr>
+                        <td><%=index%></td>
+                        <td><%= booking_id %></td>
+                        <td><%= user.name%></td>
+                        <td><%= booking_type %></td>
+                        <td><% if(driver){%>
+                            <%= driver.name %>
+                            <%}%>
+                        </td>
+                        <td><% if(suburb){%>
+                            <%= suburb.name %>
+                            <%}%>
+                        </td>
+                        <td> <% if(address){%>
+                            <%= address.address_line1 %>
+                            <%}%>
+                        </td>
+                        <td><%= moment(delivered_time).format("MMM Do YY,h:mm:ss a") %></td>
+                        <td><%= moment(delivered_time).format("h:mm:ss a") %></td>
+                        <td><% if(redeemed== true){%>
+                            <span>Delivered</span>
+                            <%}else{%>
+                            <span>Pending Delivery</span>
+                            <%}%>
+                        </td>
+                        <td>
+                            <% products.forEach(product=>{ %>
+                                <span class="badge badge-primary"><%=product.name+"-"+ product.quantity%></span>
+                            <% }) %>
+                        </td>
+                    </tr>
+                    <%})%>
+                </tbody>
+            </table>
+            <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover({
+            html: true,
+        });
+    });
+    $("#reports").addClass('active show-sub')
+    $("#ordersales").addClass('active')    
+    $('.fc-datepicker').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

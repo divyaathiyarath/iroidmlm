@@ -1,0 +1,66 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Orders</span>
+        </nav>
+    </div>
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Date:<%= moment().format('MMMM Do YYYY, h:mm:ss a'); %></h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                    <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Search order id">
+                    <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/orders" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-left bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                    <a href="<%=app_url%>/orders" type="submit" class="btn btn-outline-primary  pd-y-13 pd-x-20 bd-0 mg-md-r-50 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2" aria-pressed="true">
+                         RNG orders
+                    </a>
+                   <!-- <a href="<%=app_url%>/orders/cancelled" type="submit" class="btn btn-outline-primary  pd-y-13 pd-x-20 bd-0 mg-md-r-50 mg-md-l-50 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">
+                    Canceled
+                    </a> -->
+                    <a href="<%=app_url%>/orders/completed" type="reset" class="btn btn-outline-primary active pd-y-13 pd-x-20 bd-0 mg-md-r-50 mg-md-l-50 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">
+                    Completed
+                    </a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white mg-t-20">
+            <thead>
+                <tr>
+                    <th>Order id</th>
+                    <th>Booking type</th>
+                    <th>product/quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% bookings.forEach(booking=>{ %>
+                    <% if(booking.redeemed == true){ %>
+                    <tr>
+                        <td><%= booking.booking_id %></td>
+                        <td><%= booking.booking_type %></td>
+                        <td> <% booking.products.forEach(product=>{%>
+                            <span class="badge badge-primary"><%=product.name+"-"+product.quantity%></span>
+                        <% }) %>
+                        </td>
+                    </tr>
+                    <% } %>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<%- include('../shared/pagination.ejs',pages) %>
+<%-include('../shared/scripts.ejs')%>
+<%-include('../shared/footer-panel.ejs')%>

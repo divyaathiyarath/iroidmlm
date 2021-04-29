@@ -1,0 +1,313 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="container-fluid login_fluid">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="account_section signup">
+                    <h4 class="headding text-center"> Sign Up </h4>
+                    <p class="text-center">RiceNGrills - Fresh & Tasty </p>
+                    <form action="javascript:;" class="mt-5 login_inner" id="mainForm">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-name" placeholder="Full Name" name="name">
+                            <input type="hidden" name="ref" value="<%=ref%>">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-email" placeholder="Email ID" name="email">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-mobile" placeholder="Contact Number" name="mobile">
+                        </div>
+                        <!-- New  flating-input -->  
+                        <div class="form-group">
+                            <input type="password" class="form-control" id="" placeholder="Enter Password"
+                                name="password">
+                        </div> 
+                        <div class="form-group">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Enter Confirm Password"
+                                name="confirm_password">
+                        </div>
+                        <div class="mb-2">
+                        <p class="large">We Deliver lunch and Dinner to listed companies? Do you want to avail free Lunch/Dinner delivery to your Company?</p>
+                          <input type="radio" id="yesCheck" name="has_company" value="yes" onclick="javascript:yesnoCheck();">
+                            <label for="yes">Yes</label>
+                        <input type="radio" id="noCheck" name="has_company" value="no" onclick="javascript:yesnoCheck();" checked>
+                            <label for="no">No</label>
+                        </div>
+                        <div class="" id="ifYes" style="display:none; transition:1s;">
+                            <div class="form-group">
+                                <select type="text" class="form-control" id="company_id" name="company_id">
+                                    <option value="">Select</option>
+                                    <%
+                                        companies.forEach((company)=>{
+                                            %>
+                                            <option value="<%=company._id%>"><%=company.name%></option>
+                                            <%
+                                        })
+                                    %>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="new_address" style="display: none;">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="company_name" placeholder="Company Name" name="company_name">
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" class="form-control" id="company_email" placeholder="Company Email" name="company_email">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="company_mobile" placeholder="Company Mobile" name="company_mobile">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="autocomplete" placeholder="Address Line 1" name="company_address1" onFocus="geolocate()" onblur="checkLatLng(this)">
+                                    <input type="hidden" name="lat" id="input-lat">
+                                    <input type="hidden" name="lng" id="input-lng">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" id="company_address2" placeholder="Address Line 2" name="company_address2">
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control select2-show-search" data-placeholder="Choose suburb"
+                                        id="suburb_id" name="suburb_id">
+                                        <option label="Choose one"></option>
+                                        <%
+                                            suburbs.forEach(suburb=>{
+                                                %>
+                                        <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                                        <%
+                                            })
+                                        %>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group address_preview">
+                                <input type="text" class="form-control" id="" placeholder="Address" name="address_preview">
+                            </div>
+                            <!-- <p class="small"><a><b>Your company not listed??</b></a> Please submit company information <a href="<%=app_url%>/company"><u><b>here</b></u></a></p> -->
+                        </div>
+                        <!-- New End -->   
+                        <p class="small"> By continuing, you agree to Ricengrills's <a class="u"
+                                href="<%=app_url%>/termsofuse" id="">Terms of Use</a> and <a class="u"
+                                href="https://ricengrills.com.au/privacy" id="">Privacy Policy</a>. </p>
+                        <button type="submit" class="btn btn-primary btn-block "> Sign Up </button>
+                        <p class="small text-center mt-4 lsil"> Already have an account? <a href="<%=app_url%>/login"
+                                id=""> Sign In </a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="<%=asset_url%>/public/js/googleplaces.js"></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initAutocomplete"></script>
+<script>
+
+    function checkLatLng(el) {
+        var val = $(el).val();
+        console.log({
+            val
+        })
+        if (!val) {
+            $('#input-lat').val(``);
+            $('#input-lng').val(``);
+        }
+        var lat = $('#input-lat').val();
+        if (!lat) {
+            $(el).val(``);
+        }
+    }
+    
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            name: {
+                required: true,
+            },
+            mobile: {
+                required: true,
+            },
+            email: {
+                required: true,
+                email: true
+            },
+            mobile: {
+                required: true,
+            },
+            password:{
+                required:true
+            },
+            confirm_password:{
+                equalTo:"#confirmPassword"
+            },
+            company_name: {
+                // required: true,
+                required: function(element){
+                    return $("#company_id").val() == "other";
+                },
+                maxlength: 50,
+            },
+            // company_email: {
+            //     required: function(element){
+            //         return $("#company_id").val() == "other";
+            //     },
+            //     email: true,
+            //     maxlength: 100
+            // },
+            // company_mobile: {
+            //     required: function(element){
+            //         return $("#company_id").val() == "other";
+            //     },
+            //     maxlength: 10
+            // },
+            company_address1: {
+                required: function(element){
+                    return $("#company_id").val() == "other";
+                },
+                maxlength: 100
+            },
+            company_address2: {
+                maxlength: 100
+            },
+            suburb_id:{
+                required: true
+            }
+        },
+        messages: {
+            name: {
+                required: "Name is required",
+            },
+            mobile: {
+                required: "Mobile is required",
+            },
+            email: {
+                required: "Email is required",
+                email: "Email is not valid"
+            },
+            mobile: {
+                required: "Mobile is required",
+            },
+            password:{
+                required: "Password is required"
+            },
+            confirm_password:{
+                equalTo:"Password and confirm password must be the same"
+            },
+            company_name: {
+                required: "Company name is required",                
+                maxlength: "Maximum length must be less than 50 characters",
+            },
+            // company_email: {
+            //     required: "Company email is required",
+            //     email: "Company email is not valid",
+            //     maxlength: "Maximum length must be less than 100 characters"
+            // },
+            // company_mobile: {
+            //     required: "Company mobile is required",
+            //     maxlength: "Maximum length must be less than 10 characters"
+            // },
+            company_address1: {
+                required: "Address line 1 is required",
+                maxlength: "Maximum length must be less than 100 characters"
+            },
+            company_address2: {
+                maxlength: "Maximum length must be less than 100 characters"
+            },
+            suburb_id:{
+                required: "Suburb id is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/signup",
+                data: $(form).serialize(),
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        mobile
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = '<%=app_url%>/user'
+                            $('.submitBtn').prop('disabled', false)
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+            return false;
+        }
+    });
+
+    $('select[name="company_id"]').on('change',function(){
+        var company_id = $(this).val()
+        if(company_id == "other"){
+            $('.new_address').show();
+            $('.address_preview').hide();            
+            return false;
+        }else{
+            $('.address_preview').show();            
+            $('.new_address').hide();
+            $('input[name="address_preview"]').val('')
+        }
+        $.ajax({
+                url: "<%=app_url%>/getcompanydetails",
+                data: {
+                    company_id
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        address
+                    } = data;
+
+                    if (status == true) {
+                        if(address){
+                            $('input[name="address_preview"]').val(address.address_line1)
+                        }
+                    } else {
+                        console.log('No address found')
+                    }
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            });
+    });
+
+</script>
+
+<script>
+function yesnoCheck() {
+    if (document.getElementById('yesCheck').checked) {
+        document.getElementById('ifYes').style.display = 'block';
+    }
+        else document.getElementById('ifYes').style.display = 'none';
+    }
+</script>
+
+
+<%-include('./shared/footer-panel.ejs')%>

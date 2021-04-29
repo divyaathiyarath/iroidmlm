@@ -1,0 +1,299 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Bulk Orders</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Bulk Order List</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                    <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Search Name">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/drivers" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Name</th>
+                    <th>Scheduled Date</th>
+                    <th>Products/Quantity</th>
+                    <th>Approximate Price</th>
+                    <th>Price</th>
+                    <th>Scheduled Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orders.forEach((order,index)=>{ 
+                        let {bulkorder_status, bulkorder_review, user } = order
+                        let user_name = user? user.name:""
+                    %>
+                <tr>
+                    <td><%= ++index %></td>
+                    <td>
+                        <%=user_name %>
+                    </td>
+                    <td>
+                        <%=moment(order.scheduled_date).format('DD-MM-YYYY')  %>
+                    </td>
+                    <td>
+                        <% order.products.forEach(product =>{%>
+                        <span class="badge badge-primary"><%=product.name+"-"+ product.quantity%></span>
+                        <% }) %>
+                    </td>
+                    <td>
+                        <%= order.approximate_price %>
+                    </td>
+                    <td>
+                        <%= order.price?order.price:"--" %>
+                    </td>
+                    <td>
+                        <%= order.scheduled_time %>
+                    </td>
+                    <td>
+                        <%
+                        if(!bulkorder_status || bulkorder_status == "PENDING"){
+                    %>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-danger btn-sm" title="reject" onclick="rejectOrder(this)"
+                                data-order="<%=order._id%>"><i class="fa fa-remove"></i></button>
+                            <button type="button" class="btn btn-success btn-sm" title="approve" onclick="approveOrder(this)"
+                                data-order="<%=order._id%>"><i class="fa fa-check"></i></button>
+                        </div>
+                        <%
+                            }else if(bulkorder_status == "REJECTED"){
+                                %>
+                        <span class="badge badge-warning text-white">Rejected</span>
+                        <%
+                            }else if(bulkorder_status == "APPROVED"){
+                                %>
+                        <span class="badge badge-success text-white">Approved</span>
+                        <%
+                            }
+                        %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <%-include('./rejectordermodal.ejs')%>
+    <%-include('./approveordermodal.ejs')%>
+    <%-include('../shared/scripts.ejs')%>
+    <script>
+        $("#orders").addClass('active show-sub')
+        $("#bulkorders").addClass('active')
+        $("form#rejectForm").validate({
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            rules: {
+                price: {
+                    required: true
+                }
+            },
+            messages: {
+                price: {
+                    required: "Please enter offer price"
+                }
+            },
+            submitHandler: function (form) {
+                $('.submitBtn').prop('disabled', true)
+                var form = document.getElementById("rejectForm");
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/bulkorders/rejectorder",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function () {
+                                window.location.href = "<%=app_url%>/bulkorders/list";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function (error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+
+        $("form#approvalForm").validate({
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            rules: {
+                admin_review: {
+                    required: true
+                }
+            },
+            messages: {
+                admin_review: {
+                    required: "Please enter reason"
+                }
+            },
+            submitHandler: function (form) {
+                $('.submitBtn').prop('disabled', true)
+                var form = document.getElementById("approvalForm");
+                var data = $(form).serialize();
+                $.ajax({
+                    url: "<%=app_url%>/bulkorders/approveorder",
+                    data,
+                    type: "POST",
+                    dataType: "json",
+                    success: function (data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function () {
+                                window.location.href = "<%=app_url%>/bulkorders/list";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function (error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+    </script>
+    <script>
+        function renderRejectModal(order) {
+            var { _id } = order
+            $("#modal_order").val(_id)
+            $('#orderRejectModal').modal('toggle')
+        }
+
+        function renderApproveModal(order) {
+            var { _id } = order
+            $("#modal_order2").val(_id)
+            $('#orderApprovalModal').modal('toggle')
+        }
+        function rejectOrder(el) {
+            var order_id = $(el).data("order")
+            if (!order_id) {
+                toastr['error']("Could not find an order id")
+            }
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/getorder",
+                data: {
+                    order_id
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        order
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        console.log({ order })
+                        renderRejectModal(order)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+        }
+
+        function approveOrder(el) {
+            var order_id = $(el).data("order")
+            if (!order_id) {
+                toastr['error']("Could not find an order id")
+            }
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/getorder",
+                data: {
+                    order_id
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        order
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        console.log({ order })
+                        renderApproveModal(order)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+        }
+    </script>
+    <%-include('../shared/footer-panel.ejs')%>

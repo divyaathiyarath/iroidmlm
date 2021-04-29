@@ -1,0 +1,25 @@
+<div class="modal fade" id="addcredit" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content allergen_pop_up">
+            <div class="modal-body">
+                <div class="add_food_credit_inner">
+                    <h4> Food Credits </h4>
+                    <form action="javascript:;" id="credit-form">
+                        <div class="form-group">
+                            <label for="exampleFormControlInput1"> How many food credits do you get? </label>
+                            <input type="number" class="form-control credit-count mb-1" id="food" placeholder="Credit Amount" name="food">
+                            <div class="col-lg-12 col-md-12">
+                                <label><input type="radio" value="square" name="payment_service" checked/> Squareup</label> 
+                                <label style="float: right;"><input type="radio" value="paypal" name="payment_service" /> Paypal</label>
+                            </div>
+                            <input hidden type="number" class="form-control credit-count" id="accessories" placeholder="Accessories credits" name="accessories">
+                        </div>
+                        <button type="submit" class="btn btn-primary "> SUBMIT </button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

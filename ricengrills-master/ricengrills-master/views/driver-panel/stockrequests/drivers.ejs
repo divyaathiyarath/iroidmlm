@@ -1,0 +1,118 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Stock</span>
+        </nav>
+    </div>
+    <div class="br-pagebody" id="stock-list">
+        <form action="" style="border-bottom: solid thin lightgrey;">
+            <div class="bg-gray-100 ht-md-80  pd-t-20 mg-t-10">
+                <div class="pd-y-20 pd-md-y-0 col-md-12">
+                    Date:<b><%= moment().format('YYYY-MM-DD'); %></b>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Driver</th>
+                    <th>Required Stock</th>
+                    <th>Created At</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="list"></tbody>
+        </table>
+        <ul class="pagination"></ul>
+        <style>
+            .pagination {
+                display: block !important;
+                text-align: center;
+            }
+
+            .pagination>li {
+                display: inline-block;
+            }
+
+            .pagination>li>a {
+                background-color: #dc3545c9;
+                padding: 4px 8px 4px 8px;
+                margin-left: 5px;
+                border-radius: 4px;
+                color: white;
+            }
+        </style>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script type="text/javascript">
+    var options = {
+        valueNames: ['sid', 'driver', 'stock', 'created_at', 'status', 'action'],
+        page: 6,
+        pagination: true,
+        item: `<tr><td class="sid"></td><td class="driver"></td><td class="stock"></td><td class="created_at"></td><td class="status"></td></td><td class="action"></td></tr>`
+    };
+    var request_list = new List('stock-list', options);
+    function renderRequests(requests) {
+        request_list.clear()
+        $.each(requests, function (key, request) {
+            var { driver, products, created_at, approve_status, _id,expired} = request
+            var { name } = driver
+            var stock_details = ""
+            $.each(products, function (key, product) {
+                var { name, stock } = product
+                stock_details += `(x ${stock}) ${name},`
+            })
+            let status = "<span class='badge badge-danger'>Pending</span>"
+            let action = `<a class="btn btn-sm btn-primary" href="${APP_URL}/to_drivers/${_id}"><i class="fa fa-list"></i></a>`
+            if (approve_status) {
+                status = "<span class='badge badge-success'>Completed</span>"
+                action = ""
+            }else if(expired){
+                status = "<span class='badge badge-danger'>Expired</span>"
+                action = ""
+            }
+            request_list.add({
+                sid: ++key,
+                driver: name,
+                stock: stock_details,
+                status,
+                created_at: moment(created_at).format('YYYY-MM-DD h:m:s a'),
+                action
+            })
+        })
+    }
+    function getStockDetails() {
+        $.ajax({
+            url: "<%=app_url%>/getdriverrequests_refilling",
+            data: {
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    requests
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                if (status == true) {
+                    renderRequests(requests)
+                }
+            }
+        });
+        return false
+    }
+    getStockDetails()
+</script>
+<%-include('../shared/footer-panel.ejs')%>

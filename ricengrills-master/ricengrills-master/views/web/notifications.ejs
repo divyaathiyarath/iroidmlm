@@ -1,0 +1,24 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container-fluid pt-5 pb-5">
+    <div class="container">
+        <h5 class="headding mb-5">Notifications</h5>
+        <%
+            notifications.forEach(notification=>{
+                var {title,description,image} = notification
+                %>
+        <div class="noti__card">
+            <img src="<%=asset_url%>/public/web/images/notification.svg" alt="">
+            <div>
+                <h5> <%=title%> </h5>
+                <p> <%=description%></p>
+            </div>
+        </div>
+        <%
+            })
+        %>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<!-- scripts here -->
+<%-include('./shared/footer-panel.ejs')%>

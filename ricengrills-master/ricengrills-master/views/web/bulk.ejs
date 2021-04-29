@@ -1,0 +1,343 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="container-fluid mb-5">
+    <div class="container">
+        <!-- <h5 class="headding">  </h5> -->
+
+        <div class="mt-5">
+            <h6 class="headding"> Select your Food </h6>
+            <form class="row aie syfr jcb mt-3 flex-lg-nowrap flex-wrap" action="javascript:;">
+                <div class="form-group m-0 col-lg-3 mb-lg-0 mb-4">
+                    <label for="exampleInputEmail1">Dishes</label>
+                    <select class="form-control" id="select-product" name="select-product">
+                        <option value=""> Select Food </option>
+                        <%
+                            products.forEach(product=>{
+                                %>
+                        <option value="<%=product._id%>" data-price="<%=product.price%>" data-name="<%=product.name%>">
+                            <%=product.name%> </option>
+                        <%
+                            })
+                        %>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 mb-lg-0 mb-4">
+                    <div class="form-group m-0 ">
+                        <label for="exampleInputEmail1">Minimum Order Quantity</label>
+                        <input type="number" class="form-control" id="input-min_qty" value="<%=min_qty%>" readonly>
+                    </div>
+                </div>
+                <div class="col-lg-3 mb-lg-0 mb-4">
+                    <div class="form-group m-0 ">
+                        <label for="exampleInputEmail1">Additional Order</label>
+                        <input type="number" class="form-control" id="additional_order" value=""
+                            placeholder="Additional Number of Order">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-lg" onclick="addProduct(this)">Submit</button>
+                </div>
+            </form>
+
+        </div>
+
+        <div class="mt-5">
+            <h6 class="headding"> Selected Dishes </h6>
+
+            <div class="row mt-3" id="products_list">
+                <div class="col-8">
+                    <div class="list"></div>
+                    <style>
+                        .pagination {
+                            display: block !important;
+                            text-align: center;
+                        }
+
+                        .pagination>li {
+                            display: inline-block;
+                        }
+
+                        .pagination>li>a {
+                            background-color: #dc3545c9;
+                            padding: 4px 8px 4px 8px;
+                            margin-left: 5px;
+                            border-radius: 4px;
+                            color: white;
+                            list-style: none;
+                        }
+                    </style>
+                </div>
+                <div class="col-md-4">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="headding__section"> <b> Address Details</b> </div>
+                        <div class="address_card" id="activeAddressCard">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-5 jcc">
+                <div class="col-lg-6 col-md-8">
+                    <div class="form-group mt-3">
+                        <label for="exampleInputEmail1">Date</label>
+                        <input type="text" class="form-control date_dayaftertomorrow" id="input-date"
+                            placeholder="Pick Your Dates">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="exampleInputEmail1">Time</label>
+                        <input type="time" class="form-control" id="input-time" aria-describedby="input-time">
+                    </div>
+                    <div class="df jcb mt-5">
+                        <p class="mb-0"> Approximate Price </p>
+                        <h4 class="mb-5 headding"> $<span id="approx_price">0.00</span>/- </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <button type="button" onclick="bulkOrder()" class="btn btn-primary btn-lg">Continue</button>
+        </div>
+    </div>
+</div>
+<%-include('./shared/addresses-modal.ejs')%>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+
+    $('.date_dayaftertomorrow').datepicker({
+        multidate: false,
+        format: 'yyyy-mm-dd',
+        clearBtn: true,
+        startDate: '+3d'
+    });
+
+    var delivery_address_id = "<%=delivery_address%>"
+    function chooseUserAddress(el) {
+        $('#addresses-modal').modal('toggle')
+    }
+
+    function renderApproxPrice() {
+        items = products_list.get()
+        total_price = 0
+        $.each(items, function (key, item) {
+            var values = item.values()
+            var {
+                product_id,
+                count,
+                price
+            } = values
+            total_price += (count * price)
+        })
+        $('#approx_price').html(total_price.toFixed(2))
+    }
+
+    function changeAddress() {
+        $.ajax({
+            url: "<%=app_url%>/setaddress",
+            data: {
+                address_id: delivery_address_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status
+                } = data;
+                if (status) {
+                    console.log('Address changed')
+                }
+            }
+        });
+    }
+    function deliverToThisLocation(el) {
+        address_id = $(el).data('address')
+        delivery_address_id = address_id
+        changeAddress()
+        renderAddress()
+        infowindow.close()
+        toastr["success"]('Address changed');
+        $(window).scrollTop($('#activeAddressCard').offset().top - +100);
+    }
+    function renderAddress() {
+        $('#addresses-modal').modal('hide')
+        $.ajax({
+            url: "<%=app_url%>/addressdetails",
+            data: {
+                address_id: delivery_address_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    address
+                } = data;
+                var html = ''
+                if (address) {
+                    var { _id, type, address_line1, address_line2, address_type, appartment, contact_person, house_flat_no, landmark, to_reach } = address
+                    if (type == "USER") {
+                        html += `
+                            <u> ${address_type} </u>
+                            <p> ${address_line1}</p>
+                            <p> ${house_flat_no},${appartment} </p>
+                            <p> Street name : ${landmark}</p>
+                            <p> Instructions reach location : ${to_reach}</p>
+                            <div class="btn btn-dark btn-sm edit-btn" data-address="${_id}" onclick="chooseUserAddress(this)"> Change </div>
+                        `
+                    } else {
+                        html += `
+                            <u> COLLECTION POINT </u>
+                            <p> ${address_line1}</p>
+                            <p> ${address_line2} </p>
+                            <div class="btn btn-dark btn-sm edit-btn" data-address="${_id}" onclick="chooseUserAddress(this)"> Change </div>
+                        `
+                    }
+                } else {
+                    html += `
+                        <a href="${APP_URL}/addresses"><div class="btn btn-dark btn-sm"> Add new address </div></a>
+                    `
+                }
+                $('#activeAddressCard').html(html)
+            }
+        });
+        return false
+    }
+    renderAddress()
+
+    var options = {
+        valueNames: [
+            'name',
+            'price',
+            'count',
+            { name: 'product_id',  attr: 'data-product' },
+            { name: 'edit',  attr: 'data-product' }
+        ],
+        item: `<div class="df item_card vertical2 box_view aic jcb sd_bo flex-wrap flex-sm-nowrap">
+                <div class="df">
+                    <div class="w100 pl-0">
+                        <h4 class="mb-3 name"></h4>
+                        <p class="mb-0"> Order Count : <b class="count"></b></p>
+                        <p class="mb-0"> Approximate Price : <b><span class="price"></span> AUD/ food </b> </p>
+                    </div>
+                </div>
+                <div class="controlls">
+                    <div class="btn btn-dark btn-sm border mr-2 product_id" data-product onclick="removeProduct(this)"> Remove </div>
+                    <div class="btn btn-dark btn-sm border mr-2 edit"  data-product onclick="editProduct(this)"> Edit </div>
+                </div>
+            </div>`,
+    };
+
+    var products_list = new List('products_list', options);
+
+    function clearForm() {
+        $('#additional_order').val('')
+        $('#select-product').val('')
+    }
+
+    function addProduct() {
+        var min_order = $('#input-min_qty').val()
+        var additional_order = $('#additional_order').val()
+        var name = $('#select-product').find('option:selected').data("name");
+        var price = $('#select-product').find('option:selected').data("price");
+        var product_id = $('#select-product').val()
+        if (!product_id) {
+            toastr['error']('Please select a product')
+        }
+        products = products_list.get("product_id", product_id)
+        if (products.length > 0) {
+            toastr['error']('Already added')
+        } else {
+            products_list.add({
+                name,
+                price: price.toFixed(2),
+                product_id,
+                count: +min_order + +additional_order,
+                edit: product_id
+            })
+        }
+        renderApproxPrice()
+        clearForm()
+    }
+
+    function bulkOrder() {
+        var date = $('#input-date').val()
+        var time = $('#input-time').val()
+        if (!delivery_address_id) {
+            toastr['error']('Delivery address is required')
+            return false
+        }
+        if (!date) {
+            toastr['error']('Scheduled date is required')
+            return false
+        }
+        if (!time) {
+            toastr['error']('Scheduled time is required')
+            return false
+        }
+
+        var products = []
+        var total_item_count = 0
+        items = products_list.get()
+        $.each(items, function (key, item) {
+            var values = item.values()
+            var {
+                product_id,
+                count
+            } = values
+            if (count && count > 0) {
+                products.push({
+                    product_id,
+                    count
+                })
+            }
+        })
+
+        if (products.length <= 0) {
+            toastr['error']('Products are required')
+            return false
+        }
+
+        $.ajax({
+            url: "<%=app_url%>/bulkorder",
+            data: {
+                products,
+                date,
+                time,
+                address_id: delivery_address_id
+            },
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    payment_page
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                if (status == false) {
+                    toastr['error'](message)
+                } else {
+                    window.location.href = APP_URL + "/bulkorders"
+                }
+                $(el).attr('disabled', false)
+            }
+        });
+        return false
+    }
+
+    function removeProduct(el) {
+        product_id = $(el).data('product')
+        products_list.remove("product_id", product_id);
+        renderApproxPrice()
+        clearForm()
+    }
+    function editProduct(el){
+        product_id = $(el).data('product')
+        products_list.remove("product_id", product_id);
+        renderApproxPrice()
+        clearForm()
+        $('#select-product').val(product_id)
+        $('#additional_order').focus()
+    }
+</script>
+<%-include('./shared/footer-panel.ejs')%>

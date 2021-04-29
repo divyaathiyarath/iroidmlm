@@ -1,0 +1,311 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Scheduled Stock Limit</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Scheduled Stock Limit</h4>
+    </div>
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-12">
+                <form id="mainForm">
+                    <div class="form-layout form-layout-1">
+                        <div class="row mg-b-5">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <input type="hidden" name="id">
+                                    <label class="form-control-label">Suburb: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Suburb"
+                                        name="suburb_id" id="suburbId" multiple>
+                                        <option label="Choose Suburb"></option>
+                                        <%suburbs.forEach((suburb) => {%>
+                                        <option value="<%= suburb._id%>"><%=suburb.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Shift: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Shift"
+                                        name="shift_id" id="shiftId">
+                                        <option label="Choose Shift"></option>
+                                        <%shifts.forEach((shift) => {%>
+                                        <option value="<%=shift._id%>"><%=shift.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                        </div><!-- row -->
+                        <div class="row mg-b-5">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Product: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Product"
+                                        name="product_id" id="productId" multiple>
+                                        <option label="Choose Product"></option>
+                                        <%products.forEach((product) => {%>
+                                        <option value="<%=product._id%>"><%=product.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Limit: <span class="tx-danger">*</span></label>
+                                    <input class="form-control" type="number" name="limit" id="limitId" placeholder="Enter Limit">
+                                </div>
+                            </div><!-- col-4 -->
+                        </div><!-- row -->
+
+                        <div class="form-layout-footer">
+                            <button type="submit" class="btn btn-info">Submit</button>
+                            <button class="btn btn-secondary">Cancel</button>
+                        </div><!-- form-layout-footer -->
+                    </div>
+                </form>
+            </div>
+        </div>
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-12">
+                    <div class="ml-2 col-md-3">
+                        <select class="form-control select2-show-search" data-placeholder="Choose Suburb" name="suburb_id">
+                            <option label="Choose Suburb"></option>
+                            <%suburbs.forEach((suburb) => {%>
+                            <option value="<%= suburb._id%>" <%if(suburb._id.toString() == suburb_id){%>selected<%}%> ><%=suburb.name%></option>
+                            <%})%>
+                        </select>
+                    </div>
+                    <div class="ml-2 col-md-3">
+                        <select class="form-control select2-show-search" data-placeholder="Choose Shift"
+                            name="shift_id" id="shiftId">
+                            <option label="Choose Shift"></option>
+                            <%shifts.forEach((shift) => {%>
+                            <option value="<%=shift._id%>" <%if(shift._id.toString() == shift_id){%>selected<%}%> ><%=shift.name%></option>
+                            <%})%>
+                        </select>
+                    </div>
+                    <div class="ml-2 col-md-3">
+                        <select class="form-control select2-show-search" data-placeholder="Choose Product"
+                            name="product_id" id="productId">
+                            <option label="Choose Product"></option>
+                            <%products.forEach((product) => {%>
+                            <option value="<%=product._id%>" <%if(product._id.toString() == product_id){%>selected<%}%> ><%=product.name%></option>
+                            <%})%>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/schedule-stock-limit" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <div class="row mg-t-20">
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>Suburb</th>
+                        <th>Shift</th>
+                        <th>Product</th>
+                        <th>Limit</th>
+                        <!-- <th>Created At</th>
+                    <th>Updated At</th> -->
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%scheduled_limits.forEach((limit) => {%>
+                    <tr>
+                        <td><%=limit.suburb.name%></td>
+                        <td><%=limit.shift.name%></td>
+                        <td><%=limit.product.name%></td>
+                        <td><%=limit.limit%></td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="Action">
+                                <!-- <button type="button" class="btn btn-sm btn-success" onclick="editStockLimit('<%=limit._id%>', '<%=limit.suburb_id%>', '<%=limit.product_id%>', '<%=limit.shift._id%>', '<%=limit.limit%>')"><i
+                                        class="fa fa-edit"></i></button> -->
+                                <a href="<%=app_url%>/schedule-stock-limit/<%=limit._id%>" class="btn btn-sm btn-success" ><i class="fa fa-edit"></i></a>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteStockLimit('<%=limit._id%>')"><i
+                                        class="fa fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <%})%>
+                </tbody>
+            </table>
+            <%-include('../shared/pagination.ejs', pages)%>
+            <%if(scheduled_limits.length == 0) {%>
+            <div class="alert alert-bordered alert-info" role="alert">
+                <strong class="d-block d-sm-inline-block-force">Ooops !</strong> No result found.
+            </div><!-- alert -->
+            <%}%>
+        </div>
+    </div>
+
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+<script>
+    $("#masters").addClass('active show-sub')
+    $("#schedulelimit").addClass('active')
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            suburb_id: {
+                required: true
+            },
+            shift_id: {
+                required: true
+            },
+            product_id: {
+                required: true
+            },
+            limit: {
+                required: true
+            }
+        },
+        messages: {
+            suburb_id: {
+                required: "Suburb is required"
+            },
+            shift_id: {
+                required: "Shift is required"
+            },
+            product_id: {
+                required: 'Product is required'
+            },
+            limit: {
+                required: 'Limit is required'
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            // var data = $(form).serialize();
+            var product_id = []; 
+            var suburb_id = [];   
+            $("#productId :selected").each(function(){
+                product_id.push($(this).val()); 
+            }); 
+            $("#suburbId :selected").each(function(){
+                suburb_id.push($(this).val()); 
+            });
+            limit = $("#limitId").val()
+            shift_id = $("#shiftId").val()
+            $.ajax({
+                url: "<%=app_url%>/schedule-stock-limit",
+                // data,
+                data: {
+                    suburb_id,
+                    product_id,
+                    shift_id,
+                    limit
+                },
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.reload()
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+    function deleteStockLimit(id) {
+        $('.submitBtn').prop('disabled', true)
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Do you want to delete this limit?',
+            buttons: {
+                Delete: function () {
+                    $.ajax({
+                        url: "<%=app_url%>/schedule-stock-limit/delete",
+                        data: {
+                            id
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function () {
+                                    window.location.reload()
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function (error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                },
+                Cancel: function () {
+                    $.alert('Canceled!');
+                }
+            }
+        });
+    }
+    function editStockLimit(id, suburb_id, product_id, shift_id, limit) {
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+        $("input[name='limit']").val(limit)
+        $("input[name='id']").val(id)
+        $('#sub_id').val(id)
+        $('#suburbId').val(suburb_id);
+        $('#suburbId').select2().trigger('change');
+        $('#productId').val(product_id);
+        $('#productId').select2().trigger('change');
+        $('#shiftId').val(shift_id);
+        $('#shiftId').select2().trigger('change');
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

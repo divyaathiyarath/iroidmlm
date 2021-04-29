@@ -1,0 +1,64 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Sensors</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Sensors</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <form action="" method="GET">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80 bd pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                  <input type="text" class="form-control" name="search" value="" placeholder="Search Name / Email / Mobile">
+                  <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                  <a href="<%=asset_url%>/admin/sensors" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <div class="col-lg-4 mg-t-20 mg-lg-t-0">
+          </div>
+          <table class="table table-bordered bg-white border-top-1 border border-light">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Box-Id</th>
+                    <th>Shift</th>
+                    <th>Sensor UID</th>
+                    <th>Temperature</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% logs.forEach((item,index)=>{ ++index 
+                    let {shift,box,sensor_uid,products} = item
+                %>
+                <tr>
+                    <td><%= index %></td>
+                    <td><%= box[0].uid %> </td>
+                    <td><%= shift[0].name %></td>
+                    <td><%= sensor_uid %></td>
+                    <td>
+                        <% products.forEach(product=>{ %>
+                            <span class="badge badge-success"><%= product.name %> - <%= product.stock %></span>
+                        <% }) %>
+                    </td>
+                    <td><%= item.temperature %></td>
+                </tr>
+                <% }) %>
+            </tbody>
+          <%-include('../shared/scripts.ejs')%>
+          <script>
+        $("#sensors").addClass('active show-sub')
+        $("#allsensor").addClass('active')              
+        </script>
+          <%-include('../shared/footer-panel.ejs')%>
+    </div>
+</div>

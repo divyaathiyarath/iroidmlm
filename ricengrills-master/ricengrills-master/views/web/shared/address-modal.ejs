@@ -1,0 +1,60 @@
+<div class="modal fade" id="address-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="col-sm-12">
+                    <h5 class="headding"> New Address </h5>
+                    <form action="javascript:;" class="mt-5" id="address-form">
+                        
+                        <div class="form-group">
+                            <input type="hidden" name="_id">
+                            <select class="form-control select2-show-search" data-placeholder="Choose Address Type"
+                                name="address_type" style="width: 100%;">
+                                <option label="Choose Address Type"></option>
+                                <option value="HOME">Home</option>
+                                <option value="OFFICE">Office</option>
+                                <option value="OTHERS">Others</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control form-control-sm" placeholder="Address"
+                                name="address_line1" id="autocomplete" onFocus="geolocate()" onblur="checkLatLng(this)">
+                            <input type="hidden" name="lat" id="input-lat">
+                            <input type="hidden" name="lng" id="input-lng">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-house_flat_no" placeholder="Unit"
+                                name="house_flat_no">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-appartment" placeholder="Street Number"
+                                name="appartment">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-landmark" placeholder="Street Name"
+                                name="landmark">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-to_reach" placeholder="Reach Location"
+                                name="to_reach">
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control select2-show-search" data-placeholder="Choose suburb"
+                                name="suburb" id="suburb-filter" style="width: 100%;">
+                                <option label="Choose Suburb"></option>
+                                <%
+                            suburbs.forEach(suburb=>{
+                                %>
+                                <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                                <%
+                            })
+                        %>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block "> Save Address </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,308 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <span class="breadcrumb-item active">Drivers</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Drivers list - Rejected</h4>
+        </div>
+
+        <div class="br-pagebody">
+            <form action="">
+                <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                    <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                        <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Search Name / Email / Mobile">
+                        <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                        <a href="<%=app_url%>/drivers/rejected" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>License / Police Clearance</th>
+                        <th>License Validity</th>
+                        <th>Vehicle</th>
+                        <th>Created At</th>
+                        <th>Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let i=0 %>
+                        <% drivers.forEach(driver => { i++ %>
+                            <tr>
+                                <td>
+                                    <%= i %>
+                                </td>
+                                <td>
+                                    <%= driver.name %>
+                                </td>
+                                <td>
+                                    <%= driver.email %>
+                                </td>
+                                <td>
+                                    <%= driver.mobile %>
+                                </td>
+                                <td>
+                                    <%if(driver.profile_completed == true) {%>
+                                        <a target="_blank" href="<%=asset_url +'/'+ driver.driving_license %>">
+                                            License
+                                        </a>
+                                     <%   
+                                        if(driver.police_clearance){ 
+                                            %>
+                                            /
+                                            <a target="_blank" href="<%=asset_url +'/'+ driver.police_clearance %>">
+                                                Police Clearance
+                                            </a>
+                                            <%
+                                        }
+                                    }
+                                     else {%>
+                                        -    
+                                    <%}%>
+                                </td>
+                                <td>
+                                    <%if(driver.profile_completed == true) {%>
+                                        <%=moment(driver.license_expiry).format('YYYY-MM-DD')%>
+                                    <%} else {%>
+                                        -    
+                                    <%}%>
+                                </td>
+                                <td>
+                                    <% if(driver.vehicle){ %>
+                                        <a href="javascript:;">
+                                            <i class="fa fa-list" id="showVehicleModal" onclick="showVehicleModal(`<%=driver.vehicle.registration_number%>`,`<%=driver.vehicle.insurance%>`,`<%=moment(driver.vehicle.insurance_validity).format('YYYY-MM-DD')%>`)"></i>
+                                        </a>
+                                    <% } else {%>
+                                        -    
+                                    <%} %>
+                                </td>
+                                <td>
+                                    <%=moment(driver.created_at).format('YYYY-MM-DD')%>
+                                </td>
+                                <td>
+                                    <%-driver.admin_review%>
+                                </td>
+                                <td>
+                                    <a href="javascript:;" class="text-danger" onclick="deleteDriver('<%=driver._id%>')">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <% });%>
+                </tbody>
+            </table>
+            <%-include('./vehicle-modal.ejs')%>
+            <%-include('./reject-driver-modal.ejs')%>
+            <%-include('../shared/pagination.ejs',pages)%>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->\
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+
+            $('#drivers').addClass('active show-sub')
+            $('#rejectedDrivers').addClass('active')
+            function clearNodal() {
+                $('#modal_registation_number').html(``);
+                $('#modal_insurance').attr(`href`, ``);
+                $('#modal_insurance_validity').html(``);
+            }
+
+            function clearChangeVehicleModal() {
+                $('#modal_driver').val(``)
+                $('#modal_vehicle').val(null).trigger('change');
+            }
+
+            function showVehicleModal(registration_number, insurance, insurance_validity) {
+                clearNodal();
+                $('#modal_registation_number').html(registration_number);
+                $('#modal_insurance').attr(`href`, ASSET_URL + "/" + insurance);
+                $('#modal_insurance_validity').html(insurance_validity);
+                $('#vehicleDetailsModal').modal('toggle')
+            }
+
+            function rejectDriverModal(driver) {
+                $('#modal_driver').val(driver)
+                $('#driverRejectModal').modal('toggle')
+            }
+
+            function deleteDriver(driver) {
+                $.confirm({
+                    title: 'Confirm!',
+                    content: 'Do you want to delete this user?',
+                    buttons: {
+                        Delete: function() {
+                            $.ajax({
+                                url: "<%=app_url%>/drivers/delete",
+                                data: {
+                                    driver
+                                },
+                                type: "POST",
+                                dataType: "json",
+                                success: function(data) {
+                                    var {
+                                        status,
+                                        message,
+                                        errors,
+                                        data
+                                    } = data;
+                                    errors = typeof errors != 'undefined' ? errors : []
+                                    message = typeof message != 'undefined' ? message : null
+                                    data = typeof data != 'undefined' ? data : {}
+
+                                    if (status == true) {
+                                        toastr["success"](message);
+                                        setTimeout(function() {
+                                            window.location.href = "<%=app_url%>/drivers";
+                                        }, 1000)
+                                    } else {
+                                        if (errors.length > 0) {
+                                            toastr["error"](errors[0]);
+                                        } else if (message) {
+                                            toastr["error"](message);
+                                        }
+                                        $('.submitBtn').prop('disabled', false)
+                                    }
+                                },
+                                error: function(error) {
+                                    $('.submitBtn').prop('disabled', true)
+                                }
+                            });
+                        },
+                        Cancel: function() {
+                            $.alert('Canceled!');
+                        }
+                    }
+                });
+            }
+
+            function approveDriver(driver) {
+                $.confirm({
+                    title: 'Confirm!',
+                    content: 'Do you want to Approve this driver?',
+                    buttons: {
+                        Approve: function() {
+                            $.ajax({
+                                url: "<%=app_url%>/drivers/approve",
+                                data: {
+                                    driver
+                                },
+                                type: "POST",
+                                dataType: "json",
+                                success: function(data) {
+                                    var {
+                                        status,
+                                        message,
+                                        errors,
+                                        data
+                                    } = data;
+                                    errors = typeof errors != 'undefined' ? errors : []
+                                    message = typeof message != 'undefined' ? message : null
+                                    data = typeof data != 'undefined' ? data : {}
+
+                                    if (status == true) {
+                                        toastr["success"](message);
+                                        setTimeout(function() {
+                                            window.location.href = "<%=app_url%>/drivers/pending";
+                                        }, 1000)
+                                    } else {
+                                        if (errors.length > 0) {
+                                            toastr["error"](errors[0]);
+                                        } else if (message) {
+                                            toastr["error"](message);
+                                        }
+                                        $('.submitBtn').prop('disabled', false)
+                                    }
+                                },
+                                error: function(error) {
+                                    $('.submitBtn').prop('disabled', true)
+                                }
+                            });
+                        },
+                        Cancel: function() {
+                            $.alert('Canceled!');
+                        }
+                    }
+                });
+            }
+
+
+            $("form#rjectForm").validate({
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                rules: {
+                    driver: {
+                        required: true
+                    },
+                    admin_review: {
+                        required: true,
+                    }
+                },
+                messages: {
+                    driver: {
+                        required: "Driver is required"
+                    },
+                    admin_review: {
+                        required: "Reason for rejection is required",
+                    }
+                },
+                submitHandler: function(form) {
+                    $('.submitBtn').prop('disabled', true)
+                    var form = document.getElementById("rjectForm");
+                    $.ajax({
+                        url: "<%=app_url%>/drivers/reject-driver",
+                        data: $(form).serialize(),
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/drivers/pending";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                    return false;
+                }
+            });
+        </script>
+        
+        <%-include('../shared/footer-panel.ejs')%>

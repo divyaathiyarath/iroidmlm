@@ -1,0 +1,183 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Reports</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Scheduled Orders</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-10">
+                    <a class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 mg-md-r-10 tx-uppercase tx-11 tx-spacing-2" target="__blank"
+                            href="<%=app_url%>/reports/scheduledordersexport/export?&from_date=<%=from_date%>&to_date=<%=to_date%>"
+                            class="text-danger" title="Export to excel">
+                            <i class="fa fa-file"></i> Export to Excel
+                    </a>
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Name / booking id">
+                    <input class="form-control fc-datepicker ml-2" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                        <a href="<%=app_url%>/reports/scheduledorders" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% total_quantity.forEach((product,index)=>{ %>
+                    <tr>
+                        <td><%= index %></td>
+                        <td><%=product.product_name%></td>
+                        <td><%=product.tot_qty%></td>
+                    </tr>
+                <%})%>
+            </tbody>
+        </table>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>User</th>
+                    <th>Mobile</th>
+                    <th>Order Id</th>
+                    <th>Order Type</th>
+                    <th>Shift</th>
+                    <th>suburb</th>
+                    <th>Created At</th>
+                    <th>Scheduled Date</th>
+                    <th>Products</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orders.forEach((order,index)=>{
+                    ++index
+                    let{created_at, booking_id,booking_type,delivery_type,scheduled_date,user,suburb,shift,products, address, collectionpoint}= order
+                    console.log({user})
+
+                    let address_string = ""
+                    let suburb_name = ""
+                    if(collectionpoint){
+                        let {name, email, mobile} = collectionpoint
+                        var address_line1, address_line2 = "" 
+                        if(address){
+                            address_line1 = address.address_line1
+                            address_line2 = address.address_line2
+                        }
+                        if(suburb){                                
+                            suburb_name = suburb.name
+                        } 
+                        address_string += `
+                        <table style="width: 100%;" border="1">
+                        <tr>
+                            <th>Collection Point</th><td>${name ? name : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th><td>${email ? email : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Mobile</th><td>${mobile ? mobile : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Address Line 1</th><td>${address_line1 ? address_line1 : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Address Line 2</th><td>${address_line2 ? address_line2 : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Suburb</th><td>${suburb_name ? suburb_name : ""}</td>
+                        </tr>
+                        </table>
+                        `
+                    }else if(address){
+                        var address_line1,address_line2,house_flat_no, landmark, to_reach = ""
+                        if(address){
+                            address_line1  = address.address_line1
+                            address_line2 =  address_line2
+                            house_flat_no = address.house_flat_no 
+                            landmark = address.landmark 
+                            to_reach = address.to_reach
+                        }
+                        if(suburb){                                
+                            suburb_name = suburb.name
+                        } 
+                        address_string += `
+                        <table style="width: 100%;" border="1">
+                        <tr>
+                            <th>Address Line 1</th><td>${address_line1 ? address_line1 : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Address Line 2</th><td>${address_line2 ? address_line2 : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Unit</th><td>${house_flat_no ? house_flat_no : ""}</td>
+                        </tr>
+                        <tr>
+                            <th>Street Name</th><td>${landmark? landmark: ""}</td>
+                        </tr>
+                        <tr>    
+                            <th>Instructions reach location</th><td>${to_reach ? to_reach : ""}</td>
+                        </tr>
+                        </table>
+                        `
+                    }
+                    %>
+                <tr>
+                    <td><%=index %></td>
+                    <td><a href="javascript:;" data-toggle="popover" title="Address" data-content="<%=address_string%>"><%=user.name%></a></td>
+                    <td><%=user.mobile%></td>
+                    <td><%=booking_id%></td>
+                    <td><%=booking_type%></td>
+                    <td><% if(shift){%>
+                        <%=shift.name%>
+                        <%}%>
+                    </td>
+                    <td>
+                        <%=suburb_name%>
+                    </td>
+                    <td><%= moment(created_at).format('MMM Do YY h:mm:ss a')%></td>
+                    <td><%= moment(scheduled_date).format('MMM Do YY')%></td>
+                    <td>
+                        <% products.forEach(product=>{ %>
+                            <span class="badge badge-primary"><%=product.name+"-"+ product.quantity%></span>
+                        <% }) %>
+                    </td>
+                </tr>
+                <%})%>
+            </tbody>
+        </table>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover({
+            html: true,
+        });
+    });
+    $('.fc-datepicker').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

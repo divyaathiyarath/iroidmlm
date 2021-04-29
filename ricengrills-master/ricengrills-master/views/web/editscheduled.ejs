@@ -1,0 +1,406 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<link href="<%=asset_url%>/public/lib/jt.timepicker/jquery.timepicker.css" rel="stylesheet">
+<div class="container_fluid google_map_fluid" id="map_wrap">
+    <div id="map" style="width: 100%;height:350px;"></div>
+    <div class="choose__dev_option">
+        <div class="container">
+            <div class="row">
+                <div class="check__box location">
+                    <!-- <input type="radio" id="male" name="gender" value="male"> -->
+                    <div class="icon"></div>
+                    <label for="location" onclick="showSuburbModal()">Pick from Location</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="selected_shop_fluid">
+    <!-- New -->
+    <div class="container mb-4">
+        <div class="row">
+        <div class="col-md-6"> 
+        <div class="btns row" hidden>
+            <div class="mr-2">
+                <input type="radio" name="delivery_type" value="pickup" hidden id="pickup_check" checked/>
+                <label class="btn btns-Point" id="btns-1" for="pickup_check">
+                    Pickup Point
+                </label>
+            </div>
+            <div class="mr-2">
+                <input type="radio" name="delivery_type" value="delivery" hidden id="delivery_check"/>                        
+                <label class="btn btns-Point" id="btns-2" for="delivery_check">
+                    Delivery
+                </label>
+            </div> 
+            <%
+                if(has_office_address){
+                    %>
+                    <div>
+                        <input type="radio" name="delivery_type" value="office" hidden id="company_check" />                        
+                        <label class="btn btns-Point" id="btns-2" for="company_check">
+                            Company Employee
+                        </label>
+                    </div>
+            <% 
+                }
+            %>
+        </div>
+        </div> 
+        <div class="col-md-6">
+            <%
+                if(! has_office_address){
+            %>
+            <p class="d-flex justify-content-end mb-0"><a href="" data-toggle="modal" data-target="#PopUp">Do you want to avail free Lunch/Dinner delivery to your Company? Click Here</a></p>
+            <% 
+                }
+            %>
+        </div>
+            <div class="modal fade" id="PopUp" tabindex="-1" role="dialog" aria-labelledby="PopUp"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLongTitle">Select Office</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="javascript:;" id="changeOfficeForm">
+                            <div class="modal-body">                            
+                                <div class="form-group">
+                                    <select type="text" class="form-control" name="company_id" required>
+                                        <option value="">--Company Name--</option>
+                                        <%
+                                            companies.forEach(company=>{
+                                                let {_id,name} = company
+                                                %>
+                                                    <option value="<%=_id%>"><%=name%></option>
+                                                <%
+                                            })
+                                        %>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="Address" name="company_address" readonly>
+                                </div>                            
+                            </div>
+                            <div class=" text-center">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!-- New End-->
+        <div class="container" id="delivery-panel">
+        </div>
+    </div>
+<div class="container-fluid mb-5">
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-5">                                                   
+                <div class="open_cal">
+                    <img class="img-fluid" width="" src="<%=app_url%>/public/web/images/schedule.jpg" alt="">
+                    <div class="she_wrap">
+                        <h5 class="headding"> Schedule Your Food </h5>
+                    <input type="text" class="form-control date_single mt-4 mb-2 date-select"
+                        placeholder="Pick Your Date" onchange="selectShift(this)" id="select-date">
+                    <select class="form-control shift mb-2" name="shift" style="border-radius: 5PX;" id="select-shift">
+                        <option value="">Select Shift</option>
+                    </select>   
+                    <div class="input-group mb-2 office_address_sec">
+                        <span class="input-group-addon"><i class="fa fa-clock-o tx-16 lh-0 op-6"></i></span>
+                        <input id="tpBasic" name="break_time" type="text" class="form-control" placeholder="Your break time" onkeypress="event.preventDefault()" value="<%=break_time%>">
+                    </div>                
+                    <input type="hidden" name="discount" id="discount" value="">
+                    <input type="hidden" name="paid" id="paid" value="">
+                    <input type="hidden" name="service_charge" id="service_charge" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="col-lg-12 col-md-12">
+                    <div class="headding__section pickup_address_sec"> <b> Pickup Details</b> </div>
+                    <div class="mb-3 addd pickup_address_sec">
+                        <select id="deliveryAddress" name="delivery_address_id" class="form-control select2-show-search" onchange="changeAddressNew(this)" style="width: 100%">
+                            <%
+                                collectionpoints.forEach(function(cp){
+                                    let {_id, name,address_line1} = cp
+                                    %>
+                                        <option value="<%=_id%>"><%=name+"("+address_line1+")"%></option>
+                                    <%
+                                })
+                            %>
+                        </select>
+                    </div>
+                    <div class="headding__section delivery_address_sec"> <b> Delivery Address</b> <a href="<%=app_url%>/addresses" class="newAddress">Add new address</a></div>
+                    <div class="mb-3 addd delivery_address_sec">
+                        <select id="deliveryAddress" name="delivery_address_id" class="form-control select2-show-search" onchange="changeAddressNew(this)" style="width: 100%">
+                            <%
+                                user_addresses.forEach(function(address){
+                                    let {_id, address_line1} = address
+                                    %>
+                                        <option value="<%=_id%>"><%=address_line1%></option>
+                                    <%
+                                })
+                            %>
+                        </select>
+                    </div>
+                    <%
+                        if(has_office_address){
+                            %>
+                            <div class="headding__section office_address_sec"> <b> Office Address</b> <a href="javascript:;" class="newAddress" data-toggle="modal" data-target="#PopUp">Change Office</a></div>
+                            <div class="mb-3 addd office_address_sec">
+                                <select id="deliveryAddress" name="delivery_address_id" class="form-control select2-show-search" onchange="changeAddressNew(this)" style="width: 100%">
+                                    <%
+                                        let {_id, name, address_line1} = office_address
+                                        %>
+                                            <option value="<%=_id%>"><%=name + "("+ address_line1 + ")"%></option>
+                                        <%
+                                    %>
+                                </select>
+                            </div>
+                            <%
+                        }
+                    %>                   
+                    <div class="address_card" id="activeAddressCard"></div>
+                </div>
+            </div>
+            <div class="col-lg-1"></div>
+        </div>
+        <hr>
+        <h6 class="headding mt-5"> Your schedule details </h6>
+        <div class="title_bar">
+            <div>Total Credits : <%=food_credits.toFixed(2)%> AUD</div>
+        </div>
+        <div class="day_status_bar row jce mt-4 mb-4">
+            <div class="col-auto">
+            </div>
+        </div>
+        <div class="row">
+            <div id="products_list">
+                <div class="row list"></div>
+            </div>
+        </div>
+        <div class=" mt-5">
+            <div class="headding__section">
+                <b class="acccessories_heading"> Accessories </b>
+            </div>
+            <div id="accessories_list" style="width: 100%;">
+                <div class="row list"></div>
+            </div>
+        </div>
+        <div class="mt-3 d-flex justify-content-end">
+            <a href="javascript:;" id="checkBtn" onclick="checkOrder()">
+                <div class="btn btn-primary btn-lg btn-round fixed-btn"> Continue </div>
+            </a>
+        </div>
+    </div>
+</div>
+<%-include('./shared/suburb-modal.ejs')%>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="<%=asset_url%>/public/lib/jt.timepicker/jquery.timepicker.js"></script>
+<script>
+    $('#tpBasic').timepicker({
+        timeFormat: 'h:i a',
+        minTime: '06:30:00',
+        interval: 30 // 15 minutes
+    });
+    var old_product_price = '<%=product_price%>'
+    var old_item_count = '<%=item_count%>'
+    var service_charge_square = '<%=service_charge_square%>'
+    var service_charge_paypal = '<%=service_charge_paypal%>'
+    var selected_payment_gateway = "square";
+    var food_credits = '<%=food_credits%>'
+    if (performance.navigation.type == 2) {
+        location.reload(true);
+    }
+
+    var delivery_address_id = "<%=delivery_address%>"
+    var order_id = "<%=order_id%>"
+    var delivery_type = ""
+    var scheduled_date = null
+    var shift = null
+
+    $('.shift').on('change', function () {
+        shift = $(this).val()
+    })
+
+    $('.date-select').on('change', function () {
+        scheduled_date = $(this).val()
+    })
+
+    var gst = "<%=gst%>"
+    var delivery_charge = "<%=delivery_charge%>"
+
+    var selected_suburb = ''
+    var infowindow = null
+    var icons = {
+        van: ASSET_URL + "/public/icons/van.png",
+        cp: ASSET_URL + "/public/icons/cp.png",
+        user: ASSET_URL + "/public/icons/person.png",
+    };
+    var initloc = {
+        lat: -25.344,
+        lng: 131.036
+    };
+    var cps = {}
+
+    $('.select2-show-search').select2({
+        minimumResultsForSearch: ''
+    });
+
+    function changeAddressNew(el){
+        delivery_address_id = $(el).val()
+        renderAddress()
+    }
+
+    $('select[name="delivery_address_id"]').val(delivery_address_id)
+    $('select[name="delivery_address_id"]').select2('destroy');
+    $('select[name="delivery_address_id"]').select2();
+    $('.pickup_address_sec').show()  
+    $('.delivery_address_sec').hide()      
+    $('.office_address_sec').hide()
+
+    $('select[name="company_id"]').on('change',function(){
+        var company_id = $(this).val()
+        $.ajax({
+            url: `${APP_URL}/getcompanydetails`,
+            data: {
+                company_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+               var {status, address} = data
+               if(status == true){
+                var {address_line1} = address
+                $('input[name="company_address"]').val(address_line1)
+               }else{
+                   console.log('could not found address')
+               }
+            }
+        });
+    })
+
+    $('input[name="delivery_type"]').on('change',()=>{         
+        var val = $('input[name="delivery_type"]:checked').val()
+        if(val == "delivery"){
+            changeDeliveryType('express')
+            $('.google_map_fluid').fadeOut()
+            $('.delivery_address_sec').show()
+            $('.pickup_address_sec').hide()
+            $('.office_address_sec').hide()                        
+            delivery_address_id = $('.delivery_address_sec').find('select[name="delivery_address_id"]').val()
+            $('#select-shift').val('')
+        }else if(val == "pickup"){
+            changeDeliveryType('shop')
+            $('.google_map_fluid').fadeIn()
+            $('.pickup_address_sec').show()
+            $('.office_address_sec').hide()
+            $('.delivery_address_sec').hide()
+            delivery_address_id = $('.pickup_address_sec').find('select[name="delivery_address_id"]').val()                                    
+        }else if(val == "office"){
+            changeDeliveryType('office')
+            $('.google_map_fluid').fadeOut()
+            $('.office_address_sec').show()
+            $('.pickup_address_sec').hide()            
+            $('.delivery_address_sec').hide()
+            delivery_address_id = $('.office_address_sec').find('select[name="delivery_address_id"]').val()
+        }
+        renderAddress()
+    })
+
+    function selectShift(el){
+        var date = $(el).val()
+        $.ajax({
+            url: "<%=app_url%>/getshiftsbydate",
+            data: {
+                date
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    shifts
+                } = data;
+                if (status) {
+                    var options_html = `<option value="">Select Shift</option>`
+                    if(shifts.length > 0){
+                        $.each(shifts,function(key,value){
+                            options_html += `<option value="${value._id}">${value.name}</option>`
+                        })
+                    }
+                    $('#select-shift').html(options_html)
+                }
+                $('select[name="shift"]').val(shift)
+            }
+        });        
+    }
+
+    $('#select-shift').on('change',function(){
+        var val = $(this).val()
+        if(!val){
+            return false
+        }
+        $.ajax({
+            url: "<%=app_url%>/checkscheduledtypesbyshift",
+            data: {
+                shift: val
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    shifts
+                } = data;
+                if (!status) {
+                    var val = $('input[name="delivery_type"]:checked').val()
+                    if(val == "delivery"){
+                        toastr["error"]('Delivery option is not available on selected shift');
+                        $('#select-shift').val('')
+                    }
+                }
+            }
+        });
+    })
+
+    $('form#changeOfficeForm').on('submit',function(){
+        var val = $('select[name="company_id"]').val()
+        if(!val){
+            return false
+        }
+        $.ajax({
+            url: "<%=app_url%>/setoffice",
+            data: {
+                office_id: val
+            },
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message
+                } = data;
+                if (!status) {
+                    toastr["error"]('Could not set workplace');
+                }else{
+                    toastr["success"](message);
+                    setTimeout(() => {
+                        window.location.reload()
+                    }, 3000);
+                }
+            }
+        });
+    })
+</script>
+<script src="<%=asset_url%>/public/web/js/editscheduled.js"></script>
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places,directions&callback=initMap"></script>
+<%-include('./shared/footer-panel.ejs')%>

@@ -1,0 +1,138 @@
+<%- include('../shared/head-panel.ejs')%>
+<%- include('../shared/user-panel.ejs')%>
+<div class="container-fluid normal-fluid">
+    <div class="container" id="order-list">
+        <div class="row list">
+        </div>
+        <ul class="pagination"></ul>
+        <style>
+            .pagination {
+                display: block !important;
+                text-align: center;
+            }
+
+            .pagination>li {
+                display: inline-block;
+            }
+
+            .pagination>li>a {
+                background-color: #dc3545c9;
+                padding: 4px 8px 4px 8px;
+                margin-left: 5px;
+                border-radius: 4px;
+                color: white;
+                list-style: none;
+            }
+        </style>
+    </div>
+</div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    $('#nav-orders').addClass('active')
+
+    location_icon = {
+        shop: `${ASSET_URL}/public/web/images/shop-icon.svg`,
+        van: `${ASSET_URL}/public/web/images/delivery_vehicle.svg`
+    }
+
+    var options = {
+        valueNames: [
+            { name: 'image', attr: 'src' },
+            'address',
+            'delivery_type',
+            'orders',
+            'created_date'
+        ],
+        item: `<div class="col-md-6">           
+            <div class="card order_card">
+                <div class="order_card_head">
+                    <div>
+                        <img class="image" src="" alt="">
+                    </div>
+                    <div class="order_card_head_left">
+                        <div>
+                            <h4 class="delivery_type">Delivery</h4>
+                            <p> <img src="/public/web/images/location.svg" alt=""> <span class="address"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order_card_body">
+                    <p class="orders"></p>
+                    <p class="created_date"></p>
+                    <div class="btn btn-primary btn-outline"> Repeat Order </div>
+                </div>
+            </div>
+        </div>`,
+        page: 6,
+        pagination: true,
+    };
+
+    var order_list = new List('order-list', options);
+
+    function renderBookingsList(bookings) {
+        order_list.clear()
+        $.each(bookings, function (key, booking) {
+            console.log({
+                booking
+            })
+            var { address, orders, delivery_type, created_at } = booking
+            var address_string = ""
+            if (typeof address != 'undefined' && address) {
+                address_string = address.address_line1
+            }
+            var delivery = "Delivery"
+            var image = location_icon.van
+            if (delivery_type != "ONLINE") {
+                image = location_icon.shop
+                delivery = "Collection Point"
+            }
+            var order_string = ""
+            if (orders.length > 0) {
+                $.each(orders, function (key, order) {
+                    if (order_string) {
+                        order_string += ", "
+                    }
+                    order_string += `(${order.quantity}x) ${order.product_name}`
+                })
+            }
+            created_at = moment(created_at).format('YYYY-MM-DD h:m:s a')
+            order_list.add({
+                image,
+                address: address_string,
+                delivery_type: delivery,
+                orders: order_string,
+                created_date: created_at
+            })
+        })
+    }
+    function getOrdersList() {
+        $.ajax({
+            url: "<%=app_url%>/getorderslist",
+            data: {},
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    bookings
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                bookings = typeof bookings != 'undefined' ? bookings : []
+                if (status == true) {
+                    if (bookings.length > 0) {
+                        console.log(bookings)
+                        renderBookingsList(bookings)
+                    }
+                }
+            }
+        });
+        return false
+    }
+    getOrdersList()
+</script>
+<%-include('../shared/footer-panel.ejs')%>

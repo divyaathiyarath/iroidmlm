@@ -1,0 +1,530 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <a class="breadcrumb-item" href="<%=app_url%>/stocks">Stocks</a>
+            <span class="breadcrumb-item active">New Stock</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">New Stock</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-6">
+                <form id="mainForm" action="javascript:;">
+                    <div class="form-layout form-layout-4 bg-white">
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Suburb: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose suburb"
+                                    id="suburb_id" name="suburb_id" onchange="checkBookings()">
+                                    <option label="Choose one"></option>
+                                    <%
+                                            suburbs.forEach(suburb=>{
+                                                %>
+                                    <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                                    <%
+                                            })
+                                        %>
+                                </select>
+                                <label class="error" for="suburb_id" style="display: none;"></label>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Shift: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose shift"
+                                    id="shift_id" name="shift_id" onchange="checkBookings()">
+                                    <option label="Choose one"></option>
+                                    <%
+                                            shifts.forEach(shift=>{
+                                                coming_shift_id = ""
+                                                if(coming_shift){
+                                                    coming_shift_id = coming_shift._id.toString()
+                                                }
+                                                console.log({coming_shift_id})
+                                                %>
+                                    <option value="<%=shift._id%>"
+                                        <% if(shift._id.toString() == coming_shift_id) { %>selected<%} %>>
+                                        <%=shift.name+`[${shift.time}]`%></option>
+                                    <%
+                                            })
+                                        %>
+                                </select>
+                                <label class="error" for="shift_id" style="display: none;"></label>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Type: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose type"
+                                    id="type" name="type" onchange="checkBookings()">
+                                    <option label="Choose one"></option>
+                                    <option value="DELIVERY">Delivery</option>
+                                    <option value="REFILLING">Refilling</option>
+                                    <!-- <option value="BULK">Bulk</option> -->
+                                </select>
+                                <label class="error" for="type" style="display: none;"></label>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Driver: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose driver"
+                                    id="driver_id" name="driver_id" onchange="selectVehicle(this)">
+                                </select>
+                                <label class="error" for="driver_id" style="display: none;"></label>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Vehicle: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose vehicle"
+                                    id="vehicle_id" name="vehicle_id">
+                                </select>
+                                <label class="error" for="vehicle_id" style="display: none;"></label>
+                            </div>
+                        </div>
+                        <div id="productDiv">
+                        </div>
+                        <div class="form-layout-footer mg-t-30">
+                            <button class="btn btn-info" type="submit">Submit Form</button>
+                            <a href=""><button class="btn btn-secondary" type="button">Cancel</button></a>
+                        </div>
+                    </div>
+                    <!-- form-layout -->
+                </form>
+            </div>
+            <div class="col-xl-6">
+                <div class="form-layout form-layout-4 bg-white">
+                    <div class="row mg-t-20">
+                        <div class="col-sm-12 mg-t-10">
+                            <div id="map" style="width: 100%;height:200px;"></div>
+                        </div>
+                    </div>
+                    <div class="row mg-t-20" hidden>
+                    </div>
+                    <div id="checkDiv" class="row mg-t-20">
+                    </div>
+                </div>
+                <!-- form-layout -->
+            </div>
+            <!-- col-6 -->
+        </div>
+    </div>
+    <!-- br-pagebody -->
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<%-include('../shared/scripts.ejs')%>
+<script>
+    var initloc = {
+        lat: 0,
+        lng: 0
+    };
+</script>
+<script src="<%=asset_url%>/public/js/suburbmaps.js"></script>
+<script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initMap"></script>
+<script>
+        $("#stockupdate").addClass('active show-sub')
+        $("#newstock").addClass('active')
+    function selectVehicle(el) {
+        var driver = $(el).val()
+        $('.box-search').val('')
+        $('.box-search').trigger('change');
+        $.ajax({
+            url: "<%=app_url%>/drivers/one",
+            data: {
+                driver
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    driver
+                } = data;
+                if (driver) {
+                    var {
+                        vehicle_id
+                    } = driver
+                    $('#vehicle_id').val(vehicle_id)
+                    $('#vehicle_id').trigger('change');
+                }
+
+            }
+        });
+        return false;
+    }
+
+    function renderProducts(products) {
+        if (products.length > 0) {
+            var html = ``
+            $.each(products, function (key, product) {
+                var select_box = ``;
+                var name = `accessories[${product._id}]`
+                if (product.type == 'FOOD') {
+                    select_box = `
+                        <select class="form-control select2-show-search box-search" data-placeholder="Choose box" name="boxes[${product._id}]"></select>                
+                    `
+                    var name = `products[${product._id}]`
+                }
+                html += `
+                                        <div class="row mg-t-20">
+                                            <label class="col-sm-4 form-control-label">${product.name}: <span class="tx-danger">*</span></label>
+                                            <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                                <input type="number" class="form-control products form-control-sm" id="input-${product._id}" placeholder="Stock" name="${name}" onchange="setLowQuantityWarning(this)">
+                                                <label class="tx-warning label-warning-product" id="label-${product._id}"></label>
+                                            </div>
+                                            <div class="col-sm-4 mg-t-10 mg-sm-t-0">
+                                                ${select_box}
+                                            </div>
+                                        </div>
+                                    `
+            })
+            $('#productDiv').html(html)
+        }
+    }
+
+    function setLowQuantityWarning(el){
+        var req = $(el).data('req')
+        var value =  $(el).val()
+        if(+value == 0){
+            $(el).val('')
+        }
+        if(+value < req){
+            toastr["warning"](`minimum required quantity of this product is ${req}`);
+        }
+    }
+
+    function renderDrivers(drivers) {
+        driverhtml = `<option label="Choose one"></option>`
+        if (drivers.length > 0) {
+            $.each(drivers, function (key, driver) {
+                driverhtml += `<option value="${driver._id}">${driver.name}</option>`
+            })
+        }
+        $('#driver_id').html(driverhtml)
+        $("#driver_id").select2("destroy").select2();
+    }
+
+    function renderVehicles(vehicles,type) {
+        vehiclehtml = `<option label="Choose one"></option>`
+        if (vehicles.length > 0) {
+            $.each(vehicles, function (key, vehicle) {
+                vehiclehtml += `<option value="${vehicle._id}">${vehicle.registration_number}</option>`
+            })
+        }
+        $('#vehicle_id').html(vehiclehtml)
+
+        if (type == "DELIVERY") {
+            $("#vehicle_id").select2("destroy").select2({
+                disabled: 'readonly'
+            })
+        } else {
+            $("#vehicle_id").select2("destroy").select2({
+                disabled: false
+            })
+        }
+    }
+
+    function renderAllocatedStocks(stocks) {
+        checkDivHtml = ""
+        if (stocks.length > 0) {
+            checkDivHtml += `
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2">Allocated stocks</th>
+                                            </tr>    
+                                            <tr>
+                                                <th>Driver</th>
+                                                <th>Products</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                    `
+            $.each(stocks, function (key, stock) {
+                var {
+                    driver,
+                    products
+                } = stock
+
+                productsHtml = ""
+                if (products.length > 0) {
+                    $.each(products, function (key, product) {
+                        productsHtml += `<span class="badge badge-primary ml-1">${product.name} - ${product.stock}</span>`
+                    })
+                }
+                checkDivHtml += `
+                                            <tr>
+                                                <td>
+                                                    ${driver.name}
+                                                </td>
+                                                <td>
+                                                    ${productsHtml}
+                                                </td>
+                                            </tr>    
+                                        `
+            })
+            checkDivHtml += `
+                                        </tbody>
+                                    </table>
+                                    `
+        }
+        $('#checkDiv').html(checkDivHtml)
+    }
+
+    function renderRequiredStocks(data) {
+        $('.label-warning-product').html(``)
+        $.each(data,function(key,value){
+            var name = `products[${value._id}]`
+            $(`input[name="${name}"]`).attr('data-req',value.count)    
+            $(`#label-${value._id}`).html(`Minimum req count is ${value.count}`)
+        })
+    }
+
+    function renderCheck(data) {
+        var {
+            products,
+            vehicles,
+            drivers,
+            stocks,
+            required_stocks,
+            type
+        } = data
+        renderProducts(products)
+        renderVehicles(vehicles,type)
+        renderDrivers(drivers)
+        renderAllocatedStocks(stocks)
+        renderRequiredStocks(required_stocks)
+    }
+
+    function checkBookings() {
+        $(`.products`).val('')
+        $(`.products-span`).html('')
+        var suburb_id = $('#suburb_id').val()
+        var shift_id = $('#shift_id').val()
+        var type = $('#type').val()
+        if (suburb_id && shift_id && type) {
+            $.ajax({
+                url: "<%=app_url%>/stocks/check",
+                data: {
+                    suburb_id,
+                    shift_id,
+                    type
+                },
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        stocks,
+                        products,
+                        drivers,
+                        vehicles,
+                        required_stocks
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    stocks = typeof stocks != 'undefined' ? stocks : {}
+                    required_stocks = typeof required_stocks != 'undefined' ? required_stocks : []
+
+                    if (status == true) {
+                        $('.submitBtn').prop('disabled', false)
+                        renderCheck({
+                            products,
+                            vehicles,
+                            drivers,
+                            stocks,
+                            required_stocks,
+                            type
+                        })
+                        $(".box-search").select2({
+                            ajax: {
+                                url: '<%=app_url%>/boxes/search',
+                                data: function (params) {
+                                    var query = {
+                                        search: params.term,
+                                        shift_id,
+                                        driver_id: $('#driver_id').val()
+                                    }
+                                    return query;
+                                },
+                                dataType: "json",
+                                processResults: function (data) {
+                                    // Transforms the top-level key of the response object from 'items' to 'results'
+                                    console.log({
+                                        data
+                                    })
+                                    return {
+                                        results: data
+                                    };
+                                }
+                            }
+                        })
+
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false
+        }
+        return false
+    }
+
+    $('#suburb_id').on('change', function () {
+        suburb = $(this).val()
+        $.ajax({
+            url: "<%=app_url%>/suburbs/one",
+            data: {
+                suburb
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    data
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                data = typeof data != 'undefined' ? data : {}
+
+                if (status == true) {
+                    $('.submitBtn').prop('disabled', false)
+                    var {
+                        suburb,
+                        suburb: {
+                            location: {
+                                coordinates
+                            }
+                        }
+                    } = data
+                    if (coordinates.length > 1) {
+                        initloc = {
+                            lat: coordinates[1],
+                            lng: coordinates[0]
+                        };
+                        initMap()
+                    }
+                } else {
+                    if (errors.length > 0) {
+                        toastr["error"](errors[0]);
+                    } else if (message) {
+                        toastr["error"](message);
+                    }
+                    $('.submitBtn').prop('disabled', false)
+                }
+            },
+            error: function (error) {
+                $('.submitBtn').prop('disabled', true)
+            }
+        });
+        return false;
+    })
+
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            suburb_id: {
+                required: true
+            },
+            shift_id: {
+                required: true
+            },
+            type: {
+                required: true
+            },
+            driver_id: {
+                required: true
+            },
+            vehicle_id: {
+                required: true
+            }
+        },
+        messages: {
+            suburb_id: {
+                required: "Suburb is required"
+            },
+            shift_id: {
+                required: "Shift is required"
+            },
+            type: {
+                required: "Type is required"
+            },
+            driver_id: {
+                required: "Driver is required"
+            },
+            vehicle_id: {
+                required: "Vehicle is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = $(form).serialize();
+            $.ajax({
+                url: "<%=app_url%>/stocks/new",
+                data,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = "<%=app_url%>/stocks";
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

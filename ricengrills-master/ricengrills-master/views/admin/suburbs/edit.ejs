@@ -1,0 +1,144 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <a class="breadcrumb-item" href="<%=app_url%>/suburbs">Suburbs</a>
+                <span class="breadcrumb-item active">Edit Siburb</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Edit Suburb</h4>
+        </div>
+
+        <div class="br-pagebody">
+            <div class="row mg-t-40">
+                <div class="col-xl-6">
+                    <form id="mainForm" action="javascript:;">
+                        <div class="form-layout form-layout-4 bg-white">
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Name: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Product Name" name="name" value="<%=suburb.name%>">
+                                    <input type="hidden" name="_id" value="<%=suburb._id%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Address: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Product Name" name="address" id="autocomplete" onFocus="geolocate()" onblur="checkLatLng(this)" value="<%=suburb.address%>">
+                                    <input type="hidden" name="lat" id="input-lat" value="<%=suburb.location.coordinates[0]%>">
+                                    <input type="hidden" name="lng" id="input-lng" value="<%=suburb.location.coordinates[1]%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Radius(in kms): <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="number" class="form-control" placeholder="Enter Radius" name="radius" value="<%=suburb.radius%>">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <div class="col-sm-12 mg-t-10">
+                                    <div id="map" style="width: 100%;height:400px;"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-layout-footer mg-t-30">
+                                <button class="btn btn-info" type="submit">Submit Form</button>
+                                <a href=""><button class="btn btn-secondary" type="button">Cancel</button></a>
+                            </div>
+                        </div>
+                        <!-- form-layout -->
+                    </form>
+                </div>
+                <!-- col-6 -->
+            </div>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+            var initloc = {
+                lat: parseFloat("<%=suburb.location.coordinates[0]%>"),
+                lng: parseFloat("<%=suburb.location.coordinates[1]%>")
+            };
+        </script>
+        <script src="<%=asset_url%>/public/js/suburbmaps.js"></script>
+        <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initMap">
+        </script>
+        <script>
+            $("form#mainForm").validate({
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                rules: {
+                    name: {
+                        required: true
+                    },
+                    radius: {
+                        required: true
+                    },
+                    address: {
+                        required: true
+                    },
+                },
+                messages: {
+                    name: {
+                        required: "Suburb name is required"
+                    },
+                    radius: {
+                        required: "Suburb radius from centre point is required"
+                    },
+                    address: {
+                        required: "Suburb address is required"
+                    },
+                },
+                submitHandler: function(form) {
+                    $('.submitBtn').prop('disabled', true)
+                    var form = document.getElementById("mainForm");
+                    var data = $(form).serialize();
+                    $.ajax({
+                        url: "<%=app_url%>/suburbs/update",
+                        data,
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/suburbs";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                    return false;
+                }
+            });
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

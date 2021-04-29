@@ -1,0 +1,101 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Orders</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Driver Sales Report</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-10">
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Name / Email / Mobile">
+                    <input class="form-control fc-datepicker ml-2" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/reports/driversales" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Email</th>
+                    <th>Total Orders</th>
+                    <th>Total Order Price</th>
+                    <th>Total Work Hours</th>
+                    <th>Total Active Work Hours</th>
+                    <th>Total Inactive Work hours</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                    drivers.forEach((driver,index)=>{
+                        ++index
+                        let {_id,name,email,mobile,count,total_price,workingtime} = driver
+                        let total_workhours = 0
+                        let active_workhours = 0
+                        let inactive_hours = 0
+                        if(workingtime){
+                            total_workhours = workingtime.total_workhours
+                            active_workhours = workingtime.active_workhours
+                            inactive_hours = workingtime.inactive_hours
+                        }
+                        %>
+                <tr>
+                    <td><%=index%></td>
+                    <td><%=name%></td>
+                    <td><%=mobile%></td>
+                    <td><%=email%></td>
+                    <td><a href="<%=app_url%>/reports/individualsales/<%=_id%>/<%=from_date%>/<%=to_date%>"><%=count%></a></td>
+                    <td><%="$ "+total_price.toFixed(2)%></td>
+                    <td><%=total_workhours%></td>
+                    <td><%=active_workhours%></td>
+                    <td><%= inactive_hours %></td>
+                    <td>
+                        <a class="submitBtn btn btn-sm btn-primary" target="__blank"
+                            href="<%=app_url%>/reports/driversales/export?driver_id=<%=_id%>&from_date=<%=from_date%>&to_date=<%=to_date%>"
+                            class="text-danger" title="Export to excel">
+                            <i class="fa fa-file"></i>
+                        </a>
+                        <a class="submitBtn btn btn-sm btn-success mg-t-10" 
+                            href="<%=app_url%>/reports/individualsales/<%=_id%>/<%=from_date%>/<%=to_date%>"
+                            class="text-danger" title="Individual Sales">
+                            <i class="fa fa-user"></i>
+                        </a>
+                    </td>
+                </tr>
+                <%
+                    })
+                %>
+            </tbody>
+        </table>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <%-include('../shared/scripts.ejs')%>
+    <script>
+        $("#reports").addClass('active show-sub')
+        $("#driversales").addClass('active')    
+        $('.fc-datepicker').datepicker({
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            dateFormat: 'yy-mm-dd'
+        });
+    </script>
+    <%-include('../shared/footer-panel.ejs')%>

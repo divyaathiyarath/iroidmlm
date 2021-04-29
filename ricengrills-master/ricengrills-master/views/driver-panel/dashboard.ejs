@@ -1,0 +1,317 @@
+<%-include('./shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <span class="breadcrumb-item active"><%=SITE_NAME%></span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <!-- <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">New Vehicle</h4>
+        </div> -->
+
+    <div class="br-pagebody">
+        <div class="row">
+            <div class="col-sm-12 mg-t-5">
+                <div id="map" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+        <div class="row mg-t-10 bg-white m-0">
+            <div class="col-sm-12 mg-t-5" id="cp-list">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Collection Point</th>
+                            <th>Address</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list">
+
+                    </tbody>
+                </table>
+                <ul class="pagination"></ul>
+                <style>
+                    .pagination {
+                        display: block !important;
+                        text-align: center;
+                    }
+
+                    .pagination>li {
+                        display: inline-block;
+                    }
+
+                    .pagination>li>a {
+                        background-color: #dc3545c9;
+                        padding: 4px 8px 4px 8px;
+                        margin-left: 5px;
+                        border-radius: 4px;
+                        color: white;
+                    }
+                </style>
+            </div>
+        </div>
+        <br />
+    </div>
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    var shift_id = '<%=current_shift%>'
+    var map, van, id, target, options, infowindow = null
+    var directionsService;
+
+    var cps = []
+    var icons = {
+        van: ASSET_URL + "/public/icons/van.png",
+        cp: ASSET_URL + "/public/icons/cp.png",
+        user: ASSET_URL + "/public/icons/person.png",
+    };
+
+    var initloc = {
+        lat: -25.344,
+        lng: 131.036
+    };
+
+    var options = {
+        valueNames: ['item_cp', 'item_address', 'item_location'],
+        page: 6,
+        pagination: true,
+        item: `<tr class="cp-item"><td class="item_cp"></td><td class="item_address"></td><td class="item_location"></td></tr>`
+    };
+    var cp_list = new List('cp-list', options);
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: initloc,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: false,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#263c3f' }]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#6b9a76' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#38414e' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#212a37' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#9ca5b3' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#746855' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#1f2835' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#f3d19c' }]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#2f3948' }]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#17263c' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#515c6d' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{ color: '#17263c' }]
+                }
+            ]
+        });
+    }
+
+    function getCPInfoWindow(cp) {
+        return contentString = `
+                        <div class="address_card">
+                            <h6>
+                                <u>COLLECTION POINT</u>
+                                <br/>
+                                Name: <b>${cp.name}</b> <br/>
+                                ${cp.email}, ${cp.mobile}<br/>
+                                ${cp.address_line1}<br/>
+                                ${cp.address_line2}<br/>
+                            </h6>
+                        </div>
+        `
+    }
+
+    function setCollectionPoints(collectionpoints) {
+        var icon = {
+            scaledSize: new google.maps.Size(50, 50),
+            labelOrigin: new google.maps.Point(30, 50),
+            url: icons.cp,
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(11, 40),
+        };
+
+        $.each(collectionpoints, function (key, cp) {
+            if (cp.location) {
+                if (typeof cp.location.coordinates[1] == 'number' && typeof cp.location.coordinates[0] == 'number') {
+                    console.log(cp.location.coordinates)
+                    var position = new google.maps.LatLng(cp.location.coordinates[0], cp.location.coordinates[1]);
+                    if (typeof cps[cp._id] == 'undefined') {
+                        cps[cp._id] = new google.maps.Marker({
+                            map,
+                            icon,
+                            draggable: false,
+                            animation: google.maps.Animation.BOUNCE,
+                            position,
+                            address_line1: cp.address_line1,
+                            address_line2: cp.address_line2,
+                            address_id: cp.address_id,
+                            name: cp.name,
+                            email: cp.email,
+                            mobile: cp.mobile,
+                            location: cp.location
+                        });
+                        google.maps.event.addListener(cps[cp._id], 'click', function () {
+                            if (infowindow) {
+                                infowindow.close();
+                            }
+                            infowindow = new google.maps.InfoWindow({
+                                content: getCPInfoWindow(cps[cp._id]),
+                            });
+                            infowindow.open(map, cps[cp._id]);
+                        });
+                        map.setZoom(16);
+                        map.panTo(position);
+                    }
+                }
+            }
+        })
+
+    }
+
+    function getDirections(lat, lng) {
+        var point = new google.maps.LatLng(lat, lng)
+        map.setZoom(16);
+        map.panTo(point);
+    }
+
+    function renderCollectionPointTable(collectionpoints) {
+        cp_list.clear()
+        $.each(collectionpoints, function (key, cp) {
+            cp_list.add({
+                'item_cp': cp.name,
+                'item_address': cp.address_line1,
+                'item_location': `<a class="btn btn-success text-white" onclick="getDirections(${cp.location.coordinates[1]},${cp.location.coordinates[0]})"><i class="fa fa-map-marker"></i></a>`
+            })
+        })
+    }
+
+    function clearCPS() {
+        for (var cp in cps) {
+            cps[cp].setMap(null)
+        }
+        cps = {}
+    }
+
+    function getStockDetails() {
+        $.ajax({
+            url: "<%=app_url%>/current-stocks",
+            data: {
+                shift_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    stocks
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                console.log({ stocks })
+            }
+        });
+        return false
+    }
+    getStockDetails()
+
+    function getCollectionPoints() {
+        $.ajax({
+            url: "<%=app_url%>/cps-stocks",
+            data: {
+                shift_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    cps
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                console.log({ cps })
+                setCollectionPoints(cps)
+                renderCollectionPointTable(cps)
+            }
+        });
+        return false
+    }
+    getCollectionPoints()
+    setInterval(function () {
+        getCollectionPoints()
+    }, 30000)
+</script>
+<script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places,directions&callback=initMap"></script>
+<%-include('./shared/footer-panel.ejs')%>

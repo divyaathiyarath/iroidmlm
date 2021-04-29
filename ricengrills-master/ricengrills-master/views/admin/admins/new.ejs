@@ -1,0 +1,172 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <a class="breadcrumb-item" href="<%=app_url%>/admin-list">Admins</a>
+                <span class="breadcrumb-item active">New Admin</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">New Admin</h4>
+        </div>
+
+        <div class="br-pagebody">
+            <div class="row mg-t-40">
+                <div class="col-xl-8">
+                    <form id="mainForm" action="javascript:;">
+                        <div class="form-layout form-layout-4 bg-white">
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Name: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Name" name="name">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Email: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="email" class="form-control" placeholder="Enter Email" name="email">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Mobile: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <input type="text" class="form-control" placeholder="Enter Mobile" name="mobile">
+                                </div>
+                            </div>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label">Profile Image: <span class="tx-danger">*</span></label>
+                                <div class="col-sm-6 mg-t-10 mg-sm-t-0">
+                                    <label class="custom-file" style="width: 100%;">
+                                        <input type="file" id="file" name="profilepic" class="custom-file-input">
+                                        <span class="custom-file-control"></span>
+                                    </label>
+                                </div>
+                                <div class="col-sm-2 mg-t-10 mg-sm-t-0">
+                                    <div class="imageDiv" style="display: none;">
+                                        <img src="" alt="Profile Pic" id="profilePic" class="img img-thumbnail" width="100px">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-layout-footer mg-t-30">
+                                <button class="btn btn-info submitBtn" type="submit">Submit</button>
+                                <button class="btn btn-secondary" type="reset">Reset</button>
+                            </div>
+                        </div>
+                        <!-- form-layout -->
+                    </form>
+                </div>
+                <!-- col-6 -->
+            </div>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+            $('#admins').addClass('active show-sub')
+            $('#newadmin').addClass('active')
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#profilePic').attr('src', e.target.result);
+                        $('.imageDiv').show()
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            $("#file").change(function () {
+                readURL(this);
+            });
+
+            $("input[name='profilepic']").on('change',function(){
+                //get the file name
+                var fileName = $(this).val();
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-control').html(fileName);
+            })
+            // Submit login form
+            $("form#mainForm").validate({
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+                rules: {
+                    name: {
+                        required: true
+                    },
+                    email: {
+                        required: true,
+                        email: true
+                    },
+                    mobile: {
+                        required: true,
+                        number: true
+                    },
+                },
+                messages: {
+                    name: {
+                        required: "Name is required"
+                    },
+                    email: {
+                        required: "Email is required",
+                        email: "Email is not valid"
+                    },
+                    mobile: {
+                        required: "Mobile is required",
+                        number: 'Invalid number'
+                    },
+                },
+                submitHandler: function(form) {
+                    $('.submitBtn').prop('disabled', true)
+                    var form = document.getElementById("mainForm");
+                    var data = new FormData(form);
+                    $.ajax({
+                        url: "<%=app_url%>/admin/new",
+                        data,
+                        type: "POST",
+                        dataType: "json",
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                $("#mainForm").trigger('reset')
+                                $('.custom-file-control').html('Choose file...')
+                                $('.imageDiv').hide()
+                                $('.submitBtn').prop('disabled', false)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                    return false;
+                }
+            });
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

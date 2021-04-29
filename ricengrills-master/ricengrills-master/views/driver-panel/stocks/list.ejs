@@ -1,0 +1,113 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Stock</span>
+        </nav>
+    </div>
+    <div class="br-pagebody" id="stock-list">
+        <form action="" style="border-bottom: solid thin lightgrey;">
+            <div class="bg-gray-100 ht-md-80  pd-t-20 mg-t-10">
+                <div class="pd-y-20 pd-md-y-0 col-md-12">
+                    Date:<b><%= moment().format('YYYY-MM-DD'); %></b>
+                    &nbsp;&nbsp;&nbsp;
+                    Shift:<b><%= shift %></b>
+                    &nbsp;&nbsp;&nbsp;
+                    <!-- <a href="<%=app_url%>/stock/new" type="reset" class="btn btn-danger  tx-uppercase"
+                        style="float: right !important;">
+                        <i class="fa fa-plus"></i> Request Stock
+                    </a> -->
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>Suburb</th>
+                    <th>Orders</th>
+                </tr>
+            </thead>
+            <tbody class="list"></tbody>
+        </table>
+        <ul class="pagination"></ul>
+        <style>
+            .pagination {
+                display: block !important;
+                text-align: center;
+            }
+
+            .pagination>li {
+                display: inline-block;
+            }
+
+            .pagination>li>a {
+                background-color: #dc3545c9;
+                padding: 4px 8px 4px 8px;
+                margin-left: 5px;
+                border-radius: 4px;
+                color: white;
+            }
+        </style>
+    </div>
+</div>
+<%-include('../shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script type="text/javascript">
+    var shift_id = '<%=current_shift%>'
+    var options = {
+        valueNames: ['sid', 'name', 'quantity'],
+        page: 20,
+        pagination: true,
+        item: `<tr><td class="sid"></td><td class="name"></td><td class="quantity"></td></tr>`
+    };
+    var stock_list = new List('stock-list', options);
+    function renderStock(stocks) {
+        stock_list.clear()
+        $.each(stocks, function (key, stock) {
+            let {name,orders} = stock
+            let order_html = ""
+            if(orders.length > 0){
+                orders.forEach(order=>{
+                    let { name, quantity } = order
+                    order_html += `<span class='badge badge-success mr-1'>${name} - ${quantity}</span>`
+                })
+            }
+            stock_list.add({
+                sid: ++key,
+                name: stock.name,
+                quantity: order_html
+            })
+        })
+    }
+    function getStockDetails() {
+        $.ajax({
+            url: "<%=app_url%>/current-stocks",
+            data: {
+                shift_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    stocks
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                if (status == true) {
+                    renderStock(stocks)
+                }
+            }
+        });
+        return false
+    }
+    getStockDetails()
+</script>
+<%-include('../shared/footer-panel.ejs')%>

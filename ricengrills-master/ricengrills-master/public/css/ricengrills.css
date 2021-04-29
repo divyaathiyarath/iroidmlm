@@ -1,0 +1,8 @@
+label.error {
+    color: #e88a8a
+}
+
+.select2-container {
+    width: 100% !important;
+    padding: 0;
+}

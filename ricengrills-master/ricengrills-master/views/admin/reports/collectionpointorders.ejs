@@ -1,0 +1,343 @@
+<%-include('../shared/head-panel.ejs')%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Orders</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Collection Point Orders</h4>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-10">
+                    <a class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 mg-md-r-10 tx-uppercase tx-11 tx-spacing-2"
+                            href="<%=app_url%>/reports/collectionpointexports/export?&from_date=<%=from_date%>&to_date=<%=to_date%>"
+                            class="text-danger" title="Export to excel">
+                            <i class="fa fa-file"></i> Export to Excel
+                    </a>
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Name">
+                    <input class="form-control fc-datepicker ml-2" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/reports/cpsales" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <th>Id</th>
+                <th>Collectionpoint Name</th>
+                <th>Order Id</th>
+                <th>User Name</th>
+                <th>Created At</th>
+                <th>Scheduled Date</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Shift</th>
+                <th>Products</th>
+                <th>Address</th>
+            </thead>
+            <tbody>
+                <% orders.forEach((order,index)=>{
+                    ++index
+                    let{shift,products,suburb,booking_type,redeemed,address,user,
+                        created_at,
+                        scheduled_date,
+                        booking_id,
+                        delivery_type,
+                        collectionpoint} = order
+                        let address_string = ""
+                        if(address){
+                            var {address_line1, address_line2,house_flat_no,landmark,to_reach} = address
+                            address_string += `
+                                <table style="width: 100%;" border="1">
+                                <tr>
+                                    <th>Address Line 1</th><td>${address_line1}</td>
+                                </tr>
+                                <tr>
+                                    <th>Address Line 2</th><td>${address_line2}</td>
+                                </tr>
+                                <tr>
+                                    <th>Unit</th><td>${house_flat_no}</td>
+                                </tr>
+                                <tr>
+                                    <th>Street Name</th><td>${landmark}</td>
+                                </tr>
+                                <tr>    
+                                    <th>Instructions reach location</th><td>${to_reach}</td>
+                                </tr>
+                                </table>
+                                `
+                        }
+                %>
+                <tr>
+                    <td><%= index %></td>
+                    <td><%if(collectionpoint){%>
+                        <%=collectionpoint.name%>
+                        <%}%>
+                    </td>
+                    <td><%= booking_id %></td>
+                    <td><% if(user){%>
+                        <%= user.name %>
+                        <%}%>
+                    </td>
+                    <td><%= moment(created_at).format('MMM Do YY') %></td>
+                    <td><%= moment(scheduled_date).format('MMM Do YY') %></td>
+                    <td><%= moment(scheduled_date).format("h:mm:ss a") %></td>
+                    <td><%= booking_type %></td>
+                    <td><% if(shift){ %>
+                        <%= shift.name %>
+                        <%}%>
+                    </td>
+                    <td>
+                        <% products.forEach(product=>{ %>
+                            <span class="badge badge-primary"><%=product.name+"-"+ product.quantity%></span>
+                        <% }) %>
+                    </td>
+                    <td>
+                        <span class="btn btn-sm" data-toggle="popover" title="Address" data-content="<%=address_string%>"><i
+                            class="fa fa-list"></i></span>
+                    </td>
+                </tr>
+                <%})%>
+            </tbody>
+        </table>
+    </div>
+    <%-include('../shared/pagination.ejs',pages)%>
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+<%-include('./rejectordermodal.ejs')%>
+<%-include('./approveordermodal.ejs')%>
+<script>
+    $("#reports").addClass('active show-sub')
+    $("#collectionpointorders").addClass('active')    
+    $('.fc-datepicker').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover({
+            html: true,
+        });
+    });
+    $("#orders").addClass('active show-sub')
+    $("#allorders").addClass('active')
+    $("form#rejectForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            price: {
+                required: true
+            }
+        },
+        messages: {
+            price: {
+                required: "Please enter offer price"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("rejectForm");
+            var data = $(form).serialize();
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/rejectorder",
+                data,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = "<%=app_url%>/bulkorders/list";
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+
+    $("form#approvalForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            admin_review: {
+                required: true
+            }
+        },
+        messages: {
+            admin_review: {
+                required: "Please enter reason"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("approvalForm");
+            var data = $(form).serialize();
+            $.ajax({
+                url: "<%=app_url%>/bulkorders/approveorder",
+                data,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = "<%=app_url%>/bulkorders/list";
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<script>
+    function renderRejectModal(order) {
+        var { _id } = order
+        $("#modal_order").val(_id)
+        $('#orderRejectModal').modal('toggle')
+    }
+
+    function renderApproveModal(order) {
+        var { _id } = order
+        $("#modal_order2").val(_id)
+        $('#orderApprovalModal').modal('toggle')
+    }
+    function rejectOrder(el) {
+        var order_id = $(el).data("order")
+        if (!order_id) {
+            toastr['error']("Could not find an order id")
+        }
+        $.ajax({
+            url: "<%=app_url%>/bulkorders/getorder",
+            data: {
+                order_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    order
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+
+                if (status == true) {
+                    console.log({ order })
+                    renderRejectModal(order)
+                } else {
+                    if (errors.length > 0) {
+                        toastr["error"](errors[0]);
+                    } else if (message) {
+                        toastr["error"](message);
+                    }
+                    $('.submitBtn').prop('disabled', false)
+                }
+            },
+            error: function (error) {
+                $('.submitBtn').prop('disabled', false)
+            }
+        });
+    }
+
+    function approveOrder(el) {
+        var order_id = $(el).data("order")
+        if (!order_id) {
+            toastr['error']("Could not find an order id")
+        }
+        $.ajax({
+            url: "<%=app_url%>/bulkorders/getorder",
+            data: {
+                order_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    order
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+
+                if (status == true) {
+                    console.log({ order })
+                    renderApproveModal(order)
+                } else {
+                    if (errors.length > 0) {
+                        toastr["error"](errors[0]);
+                    } else if (message) {
+                        toastr["error"](message);
+                    }
+                    $('.submitBtn').prop('disabled', false)
+                }
+            },
+            error: function (error) {
+                $('.submitBtn').prop('disabled', false)
+            }
+        });
+    }
+
+    function changeStatus() {
+        $('input[name="search"]').val('');
+        $('#searchForm').submit();
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

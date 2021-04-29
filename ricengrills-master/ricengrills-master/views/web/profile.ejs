@@ -1,0 +1,104 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container-fluid normal-fluid">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <h5 class="headding"> Edit Profile </h5>
+                <hr class="mb-5">
+                <form action="javascript:;" class="mt-5 login_inner" id="mainForm">
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> Full Name </label>
+                        <input type="text" class="form-control" id="input-name" name="name" value="<%=session.name%>">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> Email Id </label>
+                        <input type="email" class="form-control" id="input-email" name="email" value="<%=session.email%>">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> Contact Number </label>
+                        <input type="text" class="form-control" id="input-mobile" name="mobile" value="<%=session.mobile%>">
+                    </div>
+                    <hr/>
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> Current Password </label>
+                        <input type="password" class="form-control" id="input-password" name="current_password" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> New Password </label>
+                        <input type="password" class="form-control" id="input-password" name="password" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleFormControlInput1"> Confirm Password </label>
+                        <input type="password" class="form-control" id="input-confirm_password" name="confirm_password" value="">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large "> Update Profile </button>        
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script>
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            name: {
+                required: true,
+            },
+            mobile: {
+                required: true,
+            },
+            email: {
+                required: true,
+                email:true
+            }
+        },
+        messages: {
+            mobile: {
+                required: "Mobile is required.",
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/profile",
+                data: $(form).serialize(),
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        mobile
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function(){
+                            window.location.href = '<%=app_url%>/user'
+                            $('.submitBtn').prop('disabled', false)
+                        },1000)                        
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

@@ -1,0 +1,159 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Users</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Users</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <form action="" method="GET">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80 bd pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-8">
+                    <a class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 mg-md-r-10 tx-uppercase tx-11 tx-spacing-2"
+                            href="<%=app_url%>/reports/userexports"
+                            class="text-danger" title="Export to excel">
+                            <i class="fa fa-file"></i> Export to Excel
+                    </a>
+                  <input type="text" class="form-control" name="search" value="" placeholder="Search Name / Email / Mobile">
+                  <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                  <a href="<%=asset_url%>/user/list" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <div class="col-lg-4 mg-t-20 mg-lg-t-0">
+        </div>
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Suburb</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Image</th>
+                    <th>Created At</th>
+                    <!-- <th>Action</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                <% let i=0 %>
+                <% users.forEach((user,index)=>{
+                    ++index
+                    let{suburb} = user
+                 %>
+                <tr>
+                    <% if (user){%>
+                    <td><%= index %></td>
+                    <td><%= user.name %></td>
+                    <td><%if(suburb){%>
+                        <%= suburb.name%>
+                        <%}%>
+                    </td>
+                    <td><%= user.email %></td>
+                    <td><%= user.mobile %></td>
+                    <td>
+                        <%if(user.image)  {%>
+                        <img src="<%= users.image %>" width="100px" class="img img-thumbnail">
+                        <%} else {%>
+                        -
+                        <%}%>
+                    </td>
+                    <td>
+                        <%=moment(user.created_at).format('YYYY-MM-DD')%>
+                    </td>
+                    <%}%>
+                    <!-- <td>
+                        <a href="javascript:;" onclick="changeUser('<%= users._id%>', '<%= users.active_status%>' )">
+                            <% if(users.active_status == true){%>
+                                <button class="btn btn-outline-danger"	>Deactive</button>
+
+                            <% } else {%>
+                                <button class="btn btn-outline-success"	>Active</button>
+
+                            <% } %>
+                         </a>
+                    </td> -->
+                </tr>
+                <% });%>
+            </tbody>
+        </table>
+        <%if(itemCount == 0) {%>
+            <div class="alert alert-bordered alert-info" role="alert">
+                <strong class="d-block d-sm-inline-block-force">Ooops !</strong> No result found.
+            </div><!-- alert -->
+        <%}%>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <!-- br-pagebody -->
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->\
+<%-include('../shared/scripts.ejs')%>
+<script>
+    function changeUser(id, isDeativated) {
+        var buttonName =  "Deactivate";
+        var content = 'Do you want to ' 
+        if(isDeativated == "true") {
+            buttonName = "Activate"
+            content = content +  "activate this user"
+        } else  {
+            console.log("in else")
+            buttonName = "Deactivate"
+            content = content +  "deactivate this user"
+        }
+        $.confirm({
+            title: 'Confirm!',
+            content: content,
+            buttons: {
+                [buttonName]: function () {
+                    $.ajax({
+                        url: "<%=app_url%>/user/list/deactivate",
+                        data: {
+                            id
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                window.location.reload()
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function (error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                },
+                Cancel: function() {
+                }
+            }
+        });
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

@@ -1,0 +1,188 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Stocks</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Stocks Reports</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-10">
+                    <!-- <a href="javascript:;" type="reset"
+                        class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-r-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">
+                        <i class="fa fa-upload"></i> Export
+                    </a> -->
+                    <a class="btn btn-primary pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 mg-md-r-10 tx-uppercase tx-11 tx-spacing-2"
+                            href="<%=app_url%>/reports/stockreportexport/export?&from_date=<%=from_date%>&to_date=<%=to_date%>"
+                            class="text-danger" title="Export to excel">
+                            <i class="fa fa-file"></i> Export to Excel
+                    </a>
+                    <input type="text" class="form-control" name="search" value="<%=search%>"
+                        placeholder="Search Suburb / Driver">
+                    <input class="form-control fc-datepicker ml-2" name="from_date" value="<%=from_date%>"
+                        placeholder="Search by date">
+                    <input class="form-control fc-datepicker ml-2" name="to_date" value="<%=to_date%>"
+                        placeholder="Search by date">
+                    <button type="submit"
+                        class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                    <a href="<%=app_url%>/stocks/reports" type="reset"
+                        class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered bg-white border-top-1 border border-light">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Total Stock</th>
+                    <th>Final Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                    total_product_stocks.forEach(stock=>{
+                        var {name,stock:quantity,final_stock} =stock
+                        %>
+                <tr>
+                    <td><%=name%></td>
+                    <td><%=quantity%></td>
+                    <td><%=final_stock%></td>
+                </tr>
+                <%
+                    })
+                %>
+            </tbody>
+        </table>
+        <table class="table table-bordered bg-white border-top-1 border border-light">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Driver</th>
+                    <th>Type</th>
+                    <th>Suburb</th>
+                    <th>Date</th>
+                    <th>Shift</th>
+                    <th>Initial Stock</th>
+                    <th>Final Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%
+                        var i = 0
+                        stocks.forEach(stock=>{
+                            ++i
+                            var {date,type,shift,suburb:{name:suburb_name},driver:{name:driver_name},products,final_stocks} = stock
+                            var shift_name = shift? shift.name : ""
+                            
+                            %>
+                <tr>
+                    <td><%=i%></td>
+                    <td><%=driver_name%></td>
+                    <td>
+                        <%=type%>
+                    </td>
+                    <td><%=suburb_name%></td>
+                    <td><%=moment(date).format('YYYY-MM-DD')%></td>
+                    <td><%=shift_name%></td>
+                    <td>
+                        <%
+                            products.forEach(product=>{
+                                %>
+                        <badge class="badge badge-success"><%=product.product_name+"-"+product.stock %></badge>
+                        <%
+                            })
+                        %>
+                    </td>
+                    <td>
+                        <%
+                        final_stocks.forEach(product=>{
+                            %>
+                        <badge class="badge badge-success"><%=product.product_name+"-"+product.stock %></badge>
+                        <%
+                        })
+                    %>
+                    </td>
+                </tr>
+                <%
+                        })
+                    %>
+            </tbody>
+        </table>
+        <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <!-- br-pagebody -->
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<%-include('../shared/scripts.ejs')%>
+<script>
+        $("#stockupdate").addClass('active show-sub')
+        $("#stockreport").addClass('active')
+    $('.fc-datepicker').datepicker({
+        showOtherMonths: true,
+        selectOtherMonths: true,
+        dateFormat: 'yy-mm-dd'
+    });
+
+    function deleted(box) {
+        $('.submitBtn').prop('disabled', true)
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Do you want to delete this box?',
+            buttons: {
+                Delete: function () {
+                    $.ajax({
+                        url: "<%=app_url%>/boxes/delete",
+                        data: {
+                            box
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function () {
+                                    window.location.href = "<%=app_url%>/boxes";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function (error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                },
+                Cancel: function () {
+                    $.alert('Canceled!');
+                }
+            }
+        });
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

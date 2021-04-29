@@ -1,0 +1,654 @@
+<%-include('./shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <span class="breadcrumb-item active"><%=SITE_NAME%></span>
+        </nav>
+    </div>
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-4">
+                    <!-- <input type="text" class="form-control" name="search" value="" placeholder="Search Suburb / Driver"> -->
+                    <!-- <select class="form-control select2-show-search" data-placeholder="Choose suburb" name="suburb"
+                        id="suburb-filter">
+                        <option value="ALL">All Suburbs</option>
+                        <%
+                            suburbs.forEach(suburb=>{
+                                %>
+                        <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                        <%
+                            })
+                        %>
+                    </select> -->
+
+                    <select class="form-control select2-show-search" data-placeholder="Choose driver" name="driver"
+                        id="driver-filter">
+                        <option value="ALL">All Drivers</option>
+                        <%
+                            drivers.forEach(driver=>{
+                                %>
+                        <option value="<%=driver._id%>"><%=driver.name%></option>
+                        <%
+                            })
+                        %>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="row mg-t-0">
+            <div class="col-sm-12 mg-t-10">
+                <div id="map" style="width: 100%;height:400px;"></div>
+            </div>
+        </div>
+        <div class="mt-2 bd bg-white rounded table-responsive">
+            <table class="table mg-b-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Driver Name</th>
+                        <th>Stocks</th>
+                        <th>Suburbs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%
+                        let i = 0;
+                        drivers.forEach(driver=>{
+                            i++;
+                            let {name,stock,total_products, suburbs} = driver
+                            let stock_html = `
+                                    <table class="driver_popup_table" style="width: 100%;" border="1">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Type</th>
+                                                <th>Stock</th>
+                                            </tr>
+                                        </thead>    
+                                        <tbody>
+                                `
+                            stock.forEach(st=>{
+                                let {product_name,type,stock,box_id} = st
+                                stock_html += `
+                                    <tr>
+                                        <td>${product_name}</td>
+                                        <td>${type}</td>
+                                        <td>${stock}</td>
+                                    </tr>
+                                `
+                            })
+                            stock_html += "</tbody></table>"
+
+                            let suburbs_html = ""
+                            suburbs.forEach(suburb=>{
+                                let {name} = suburb
+                                suburbs_html += `<span class="badge badge-success mr-2">${name}</span>`
+                            })
+                            %>
+                    <tr>
+                        <th scope="row"><%=i%></th>
+                        <td><%=name%></td>
+                        <td>
+                            <button title="Stock Details" class="btn btn-sm btn-success" data-toggle="popover"
+                                data-content="<%=stock_html%>"><i class="fa fa-list"></i></button>
+                        </td>
+                        <td><%-suburbs_html%></td>
+                    </tr>
+                    <%
+                        })
+                    %>
+                </tbody>
+            </table>
+        </div>
+        <div class="bd bg-white mg-t-5">
+            <div class="rounded table-responsive" id="cp-list">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Collection Point</th>
+                            <th>Address</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list">
+                    </tbody>
+                </table>
+                <ul class="pagination"></ul>
+                <style>
+                    .pagination {
+                        display: block !important;
+                        text-align: center;
+                    }
+
+                    .pagination>li {
+                        display: inline-block;
+                    }
+
+                    .pagination>li>a {
+                        background-color: #dc3545c9;
+                        padding: 4px 8px 4px 8px;
+                        margin-left: 5px;
+                        border-radius: 4px;
+                        color: white;
+                    }
+                </style>
+            </div>
+        </div>
+        <div class="row row-sm mt-2">
+            <div class="col-sm-6 col-xl-6">
+                <div class="bg-teal rounded overflow-hidden">
+                    <div class="pd-25 d-flex align-items-center">
+                        <i class="ion ion-earth tx-60 lh-0 tx-white op-7"></i>
+                        <div class="mg-l-20">
+                            <p class="tx-10 tx-spacing-1 tx-mont tx-medium tx-uppercase tx-white-8 mg-b-10">
+                                Current/Coming Shift</p>
+                            <p class="tx-24 tx-white tx-lato tx-bold mg-b-2 lh-1"><%=coming_shift_name%></p>
+                            <span class="tx-11 tx-roboto tx-white-6">Download drivers list <a class="text-white"
+                                    style="text-decoration: none;" target="__blank"
+                                    href="<%=app_url%>/export/driver?shift=<%=coming_shift%>&date=<%=coming_shift_date%>">Here</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- col-3 -->
+            <div class="col-sm-6 col-xl-6 mg-t-20 mg-sm-t-0">
+                <div class="bg-danger rounded overflow-hidden">
+                    <div class="pd-25 d-flex align-items-center">
+                        <i class="ion ion-bag tx-60 lh-0 tx-white op-7"></i>
+                        <div class="mg-l-20">
+                            <p class="tx-10 tx-spacing-1 tx-mont tx-medium tx-uppercase tx-white-8 mg-b-10">Current
+                                Orders
+                            </p>
+                            <p class="tx-24 tx-white tx-lato tx-bold mg-b-2 lh-1"><%=current_order%></p>
+                            <span class="tx-11 tx-roboto tx-white-6">Download orders list <a class="text-white"
+                                    style="text-decoration: none;" target="__blank"
+                                    href="<%=app_url%>/export/orders?shift=<%=coming_shift%>&date=<%=coming_shift_date%>">Here</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- col-3 -->
+        </div>
+        <br />
+    </div>
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover({
+            html: true,
+        });
+    });
+
+    var options = {
+        valueNames: ['item_cp', 'item_address', 'item_location'],
+        page: 6,
+        pagination: true,
+        item: `<tr class="cp-item">
+                    <td class="item_cp">
+                    </td>
+                    <td class="item_address">
+                    </td>
+                    <td class="item_location">
+                    </td>
+                </tr>`
+    };
+    var cp_list = new List('cp-list', options);
+
+    var map, id, target, options = null
+    var infowindow = null
+    var directionsService;
+    var db = firebase.firestore()
+    var locations = []
+    var van = {}
+    var cps = []
+    var selected_driver = null
+    var selected_suburb = null
+    var icons = {
+        van: ASSET_URL + "/public/icons/van.png",
+        van_lowstock: ASSET_URL + "/public/icons/van.png",
+        cp: ASSET_URL + "/public/icons/cp.png",
+        cp_lowstock: ASSET_URL + "/public/icons/cp.png",
+        user: ASSET_URL + "/public/icons/person.png",
+    };
+
+    var initloc = {
+        lat: -25.344,
+        lng: 131.036
+    };
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 16,
+            center: initloc,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            mapTypeControl: false,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'poi',
+                    stylers: [{ visibility: "off" }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#38414e' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#212a37' }]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#9ca5b3' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#746855' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{ color: '#1f2835' }]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#f3d19c' }]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#2f3948' }]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#d59563' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{ color: '#17263c' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{ color: '#515c6d' }]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{ color: '#17263c' }]
+                }
+            ]
+        });
+    }
+
+    function updateVanLocation(data) {
+        console.log({ firestore_data: data })
+        var {
+            lat,
+            lng,
+            location,
+            timestamp,
+            driver,
+            temp_devices
+        } = data
+        console.log({
+            lat,
+            lng
+        })
+        var position = new google.maps.LatLng(lat, lng)//location.latitude, location.longitude
+        // console.log({ stock })
+        initloc = {
+            lat,
+            lng
+        }
+
+        van[driver].setPosition(position)
+        // map.setZoom(16);
+        // map.panTo(van[driver].position);
+    }
+
+    function updateTemp(data) {
+        console.log(data)
+    }
+
+
+
+    function getDriverInfoWindow(van) {
+        var stocks = van.stock
+        var temp_devices = van.temp_devices
+
+
+        var tempHtml = `<table class="table-bordered" style="padding:5px; border:1px solid grey;"></thead><tr><th>Device</th><th>Temperature</th></tr></thead><tbody>`
+        if (temp_devices) {
+            $.each(temp_devices, function (device, value) {
+                tempHtml += `
+                    <tr><td>${value.DeviceID}</td><td>${value.temp}</td></tr>
+                `
+            })
+        }
+        tempHtml += "</tbody></table>"
+
+        var stocksHtml = `<table class="table-bordered" style="padding:5px; border:1px solid grey;"></thead><tr><th>Product</th><th>Stock</th><th>Box</th><th>Sensor</th></tr></thead><tbody>`
+        $.each(stocks, function (key, value) {
+            var { product_name, stock, box } = value
+            var uid = "--"
+            var sensor_uid = "--"
+            if (box) {
+                uid = box.uid,
+                    sensor_uid = box.sensor_uid
+            }
+            stocksHtml += `
+                <tr><td>${product_name}</td><td>${stock}</td><td>${uid}</td><td>${sensor_uid}</td></tr>
+            `
+        })
+        stocksHtml += "</tbody></table>"
+
+        return contentString = `
+                <table class="table" width="100" style="padding:5px; border:1px solid grey;">
+                    <tbody>
+                        <tr>
+                            <th>Driver</th>
+                            <td>${van.driver}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">${tempHtml}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">${stocksHtml}</td>
+                        </tr>
+                    </tbody>
+                </table>
+        `
+    }
+
+    function clearMap() {
+        for (var driver in van) {
+            // console.log({ driver })
+            van[driver].setMap(null)
+        }
+        van = {}
+    }
+
+    function initializeVanLocations() {
+        clearMap()
+        $.ajax({
+            url: "<%=app_url%>/getvanlocations",
+            data: {
+                selected_driver,
+                selected_suburb
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    drivers
+                } = data;
+                status = typeof status != 'undefined' ? status : null
+                drivers = typeof drivers != 'undefined' ? drivers : null
+                if (status == true) {
+                    $.each(drivers, function (key, driver) {
+                        var { _id, location, name, stock_id, stock, low_stock } = driver
+
+                        if (typeof location != "undefined") {
+                            var { coordinates } = location
+                            if (typeof location != "undefined") {
+                                location = {
+                                    lat: coordinates[1],
+                                    lng: coordinates[0]
+                                }
+                            } else {
+                                location = initloc
+                            }
+                        } else {
+                            location = initloc
+                        }
+
+                        var van_icon = icons.van
+                        if (low_stock) {
+                            van_icon = icons.van_lowstock
+                        }
+
+                        var icon = {
+                            scaledSize: new google.maps.Size(50, 50),
+                            labelOrigin: new google.maps.Point(30, 50),
+                            url: van_icon,
+                            origin: new google.maps.Point(0, 0),
+                            anchor: new google.maps.Point(11, 40),
+                        };
+
+                        van[driver._id] = new google.maps.Marker({
+                            map,
+                            icon,
+                            draggable: false,
+                            animation: google.maps.Animation.DROP,
+                            position: location,
+                            driver: name,
+                            driver_id: driver._id,
+                            stock_id: stock_id,
+                            stock: stock,
+                            label: {
+                                color: 'white',
+                                fontWeight: 'bold',
+                                text: name,
+                            },
+                        });
+
+                        google.maps.event.addListener(van[driver._id], 'click', function () {
+                            if (infowindow) {
+                                infowindow.close();
+                            }
+                            infowindow = new google.maps.InfoWindow({
+                                content: getDriverInfoWindow(van[driver._id]),
+                            });
+                            infowindow.open(map, van[driver._id]);
+                        });
+
+                        locations = db.collection('Location')
+                        locations.where('driver', '==', driver._id).orderBy("timestamp", 'desc').limit(1).onSnapshot({
+                            includeMetadataChanges: true
+                        }, function (snapshot) {
+                            snapshot.docs.forEach(doc => {
+                                let data = doc.data()
+                                updateVanLocation(data)
+                            })
+                        });
+
+                        var temperature = db.collection('Temperature')
+                        temperature.where('id', '==', driver._id).limit(1).onSnapshot({
+                            includeMetadataChanges: true
+                        }, function (snapshot) {
+                            snapshot.docs.forEach(doc => {
+                                var data = doc.data()
+                                var { device, id } = data
+                                console.log({
+                                    device,
+                                    id
+                                })
+                                van[id].temp_devices = device
+                            })
+                        });
+
+                        map.setZoom(16);
+                        map.panTo(location);
+                    })
+                } else {
+                    console.log('No drivers found')
+                }
+            }
+        });
+        return false
+    }
+    initializeVanLocations();
+
+    function setCollectionPoints(collectionpoints) {
+        var icon = {
+            scaledSize: new google.maps.Size(50, 50),
+            labelOrigin: new google.maps.Point(30, 50),
+            url: icons.cp,
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(11, 40),
+        };
+
+        $.each(collectionpoints, function (key, cp) {
+            // console.log(cp)
+            if (typeof cp.location.coordinates[1] == 'number' && typeof cp.location.coordinates[0] == 'number') {
+                var position = new google.maps.LatLng(cp.location.coordinates[1], cp.location.coordinates[0]);
+                if (typeof cps[cp._id] == 'undefined') {
+                    cps[cp._id] = new google.maps.Marker({
+                        map,
+                        icon,
+                        draggable: false,
+                        // animation: google.maps.Animation.BOUNCE,
+                        position
+                    });
+                    map.setZoom(16);
+                    map.panTo(position);
+                }
+            }
+        })
+
+    }
+
+    function getDirections(lat, lng) {
+        var point = new google.maps.LatLng(lat, lng)
+        map.setZoom(16);
+        map.panTo(point);
+    }
+
+    function renderCollectionPointTable(collectionpoints) {
+        cp_list.clear()
+        $.each(collectionpoints, function (key, cp) {
+            var lat = 0
+            var lng = 0
+            var { location } = cp
+            if (location) {
+                var { coordinates } = location
+                if (coordinates && coordinates.length > 0) {
+                    lat = coordinates[1]
+                    lng = coordinates[0]
+                }
+            }
+            let {stock} = cp;
+            let popover_html = ""
+            let popover = ""
+            if(stock && stock.length > 0){
+                popover_html += `<table class="cp_popup_table" style="width: 100%;" border="1">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Type</th>
+                                        <th>Stock</th>
+                                    </tr>
+                                </thead>    
+                            <tbody>`
+                stock.forEach(st=>{
+                    let {name,stock,type} = st
+                    popover_html += `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${type}</td>
+                            <td>${stock}</td>
+                        </tr>
+                    `
+                })
+                popover_html += `
+                    </tbody>
+                </table> 
+                ` 
+                popover = `<button title="Stock Details" class="btn btn-sm btn-success" data-toggle="popover"
+                                data-content='${popover_html}'><i class="fa fa-list"></i></button>`
+            }
+            cp_list.add({
+                'item_cp': cp.name,
+                'item_address': cp.address.address_line1,
+                'item_location': `${popover} <a class="btn btn-sm btn-success text-white" onclick="getDirections(${lat},${lng})"><i class="fa fa-map-marker"></i></a>`
+            })
+            $('[data-toggle="popover"]').popover({
+                html: true,
+            });
+        })
+    }
+
+
+    function getCollectionPoints() {
+        $.ajax({
+            url: "<%=app_url%>/getcollectionpoints",
+            data: {},
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    collectionpoints
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                data = typeof data != 'undefined' ? data : {}
+                if (status == true) {
+                    if (collectionpoints.length > 0) {
+                        renderCollectionPointTable(collectionpoints)
+                        setCollectionPoints(collectionpoints)
+                    }
+                }
+            }
+        });
+        return false
+    }
+
+    setTimeout(function () {
+        getCollectionPoints()
+    }, 1000)
+
+    setInterval(function () {
+        getCollectionPoints()
+    }, 30000);
+
+    $('#driver-filter').on('change', function () {
+        selected_driver = $(this).val()
+        if (selected_driver == 'ALL') {
+            selected_driver = ''
+        }
+        if ($('#suburb-filter').val() != "ALL" && selected_driver) {
+            $('#suburb-filter').val(`ALL`)
+            $('#suburb-filter').trigger('change')
+        }
+
+        initializeVanLocations()
+    })
+
+    $('#suburb-filter').on('change', function () {
+        selected_suburb = $(this).val()
+        if (selected_suburb == 'ALL') {
+            selected_suburb = ''
+        }
+        if ($('#driver-filter').val() != "ALL" && selected_suburb) {
+            $('#driver-filter').val(`ALL`)
+            $('#driver-filter').trigger('change')
+        }
+        initializeVanLocations()
+    })
+</script>
+<!-- <script src="<%=asset_url%>/public/js/driverpanel-map.js"></script> -->
+<script defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places,directions&callback=initMap"></script>
+<%-include('./shared/footer-panel.ejs')%>

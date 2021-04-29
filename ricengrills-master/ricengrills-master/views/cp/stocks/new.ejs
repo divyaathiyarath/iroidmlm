@@ -1,0 +1,121 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>               
+                <span class="breadcrumb-item active">New stock</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">New excess stock</h4>
+        </div>
+        <div class="br-pagebody">
+            <div class="row mg-t-40">
+                <div class="col-xl-6">
+                    <form id="mainForm" action="javascript:;">
+                        <div class="form-layout form-layout-4 bg-white">
+                            <%
+                                var i= 0
+                                products.forEach(product=>{
+                                    %>
+                                <div class="row mg-t-20">
+                                    <label class="col-sm-4 form-control-label"><%=product.name%>:</label>
+                                    <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                        <input type="number" class="form-control" placeholder="Enter stock for <%=product.name%>" name="products[<%=product._id%>]">
+                                    </div>
+                                </div>
+                                <%
+                                    i++
+                                })
+                            %>
+                                    <div class="form-layout-footer mg-t-30">
+                                        <button class="btn btn-info" type="submit">Submit Form</button>
+                                        <a href=""><button class="btn btn-secondary" type="button">Cancel</button></a>
+                                    </div>
+                        </div>
+                        <!-- form-layout -->
+                    </form>
+                </div>
+                <!-- col-6 -->
+            </div>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+            // Datepicker
+            $('.fc-datepicker').datepicker({
+                showOtherMonths: true,
+                selectOtherMonths: true
+            });
+
+            function checkLatLng(el) {
+                var val = $(el).val();
+                console.log({
+                    val
+                })
+                if (!val) {
+                    $('#input-lat').val(``);
+                    $('#input-lng').val(``);
+                }
+                var lat = $('#input-lat').val();
+                if (!lat) {
+                    $(el).val(``);
+                }
+            }
+
+            // Submit login form
+            $("form#mainForm").validate({
+                normalizer: function(value) {
+                    return $.trim(value);
+                },
+               
+                submitHandler: function(form) {
+                    $('.submitBtn').prop('disabled', true)
+                    var form = document.getElementById("mainForm");
+                    var data = $(form).serialize()
+                    $.ajax({
+                        url: "<%=app_url%>/stock/new",
+                        data,
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/stock";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                    return false;
+                }
+            });
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

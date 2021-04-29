@@ -1,0 +1,199 @@
+<%-include('../shared/head-panel.ejs')%>
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <span class="breadcrumb-item active">Coupons</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Coupons list</h4>
+        </div>
+        <div class="br-pagebody">
+            <form action="">
+                <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                    <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                        <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Enter coupon name">
+                        <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                        <a href="<%=app_url%>/coupons" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <table class="table bg-white border-top-1 border border-light">
+                <thead>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>Suburb</th>
+                    <th>value</th>
+                    <th>code</th>
+                    <th>count</th>
+                    <th>Action</th>
+                    <th>coupon status</th>
+                </thead>
+                <tbody>
+                    <% let i = 0 %>
+                        <% coupon.forEach(coupons =>{
+                            i++
+                            let {name, suburbs, val, code, count, active_status,  _id } = coupons
+                        %>
+                            <tr>
+                                <td><%= i %></td>
+                                <td><%= name %></td>
+                                <td><% 
+                                    if(typeof suburbs != "undefined" && suburbs.length > 0){
+                                        suburbs.forEach(suburb=>{
+                                            %>
+                                                <label class="badge badge-success mr-1"><%=suburb.name%></label>
+                                            <%
+                                        })
+                                    }
+                                    %>
+                                </td>
+                                <td><%= val %></td>
+                                <td><%= code %></td>
+                                <td><%= count %></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a class="btn btn-sm btn-danger submitBtn" href="javascript:;" class="text-danger" onclick="deleteCoupon('<%=_id%>')">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                        <a class="btn btn-sm btn-info submitBtn" href="<%=app_url%>/coupons/edit/<%=_id%>" class="text-danger" >
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+                                    </div>                                    
+                                </td>
+                                <td>
+                                        <% if(coupons.active_status == true){%>
+                                            <a href="javascript:;" onclick="couponStatus('<%=coupons._id%>','<%=coupons.active_status%>')" class="btn btn-sm btn-danger submitBtn"   ><i class="fa fa-times"></i></a>
+                                        <% } else { %>
+                                            <a href="javascript:;" onclick="couponStatus('<%=coupons._id%>','<%=coupons.active_status%>')" class="btn btn-sm btn-success submitBtn" ></i><i class="fa fa-check"></i></a>
+                                        <% } %>
+                                    </a>
+                                </td>
+                            </tr>
+                        <%}) %>
+                </tbody>
+            </table>
+            </div>
+    </div>
+<%-include('../shared/scripts.ejs')%>
+<script>
+        $("#coupons").addClass('active show-sub')
+        $("#allcoupons").addClass('active')    
+    function deleteCoupon(coupon) {
+        $('.submitBtn').prop('disabled', true)
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Do you want to delete this coupon?',
+            buttons: {
+                Delete: function() {
+                    $.ajax({
+                        url: "<%=app_url%>/coupons/delete",
+                        data: {
+                            coupon
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/coupons";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                },
+                Cancel: function() {
+                    $.alert('Canceled!');
+                }
+            }
+        });
+    }
+
+    function couponStatus(coupon,isDeactivated){
+        var buttonName = "Deactivate"
+        var content = "Do you want to "
+        if(isDeactivated == "true"){
+            buttonName = "Activate"
+            content =content + "activate  this coupon"}
+        else{
+            buttonName = "Deactivate"
+            content = content + "deactivate this coupon"
+        }
+        // $('.submitBtn').prop('disabled', true)
+        $.confirm({
+            title: 'Confirm!',
+            content: content,
+            buttons: {
+                [buttonName]: function() {
+                    $.ajax({
+                        url: "<%=app_url%>/coupons/deactivate",
+                        data: {
+                            coupon
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/coupons";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                },
+                Cancel: function() {
+                    $.alert('Canceled!');
+                }
+            }
+        });
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

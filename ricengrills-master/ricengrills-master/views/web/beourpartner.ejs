@@ -1,0 +1,201 @@
+<%- include('./shared/head-panel.ejs')%>
+<!-- Body part -->
+
+<div class="container-fluid login_fluid">
+    <div class="container">
+        <div class="row jcc">
+            <div class="col-md-7">
+                <form action="javascript:;" id="mainForm">
+                    <div class="account_section partner__form">
+                        <h3 class="headding"> Be Our Partner </h3>
+                        <p class=" mb-5"> Want to become our partner?, please let us know</p>
+                        <div class="row">
+                            <div class="col-md-4 llabel"> Name <span>*</span></div>
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="input-name"
+                                    placeholder="Enter Collection Point Name " name="name">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Image</div>
+                            <div class="col-md-8 mt-4">
+                                <input type="file" name="image" id="file-image">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Contact Name <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" id="input-contact_name"
+                                    placeholder="Enter Contact Name " name="contact_name">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Email <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="email" class="form-control" id="input-email" placeholder="Enter Email "
+                                    name="email">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Mobile(without code) <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="number" class="form-control" id="input-mobile"
+                                    placeholder="Enter Mobile Number " name="mobile">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Address Line 1 <span>*</span></div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" placeholder="Enter Address Line 1"
+                                    name="address_line1" id="autocomplete" onFocus="geolocate()"
+                                    onblur="checkLatLng(this)">
+                                <input type="hidden" name="lat" id="input-lat">
+                                <input type="hidden" name="lng" id="input-lng">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Address Line 2 </div>
+                            <div class="col-md-8 mt-4">
+                                <input type="text" class="form-control" id="input-addressline2"
+                                    placeholder="Enter Address Line 2 " name="address_line2">
+                            </div>
+
+                            <div class="col-md-4 mt-4 llabel"> Suburbs <span>*</span> </div>
+                            <div class="col-md-8 mt-4">
+                                <select class="form-control select2-show-search" data-placeholder="Choose suburb"
+                                    id="suburb_id" name="suburb_id">
+                                    <option label="Choose one"></option>
+                                    <%
+                                        suburbs.forEach(suburb=>{
+                                            %>
+                                    <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                                    <%
+                                        })
+                                    %>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5">
+                            <button class="btn btn-red mr-3" type="submit"> Submit Form </button>
+                            <a class="btn btn-red desable" href="<%=app_url%>/beourpartner"> Cancel </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script src="<%=asset_url%>/public/js/googleplaces.js"></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initAutocomplete"></script>
+<script>
+    function checkLatLng(el) {
+        var val = $(el).val();
+        console.log({
+            val
+        })
+        if (!val) {
+            $('#input-lat').val(``);
+            $('#input-lng').val(``);
+        }
+        var lat = $('#input-lat').val();
+        if (!lat) {
+            $(el).val(``);
+        }
+    }
+
+    // Submit login form
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            name: {
+                required: true,
+                lettersonly: true,
+                maxlength: 50,
+            },
+            contact_name: {
+                required: true,
+                maxlength: 50,
+                lettersonly:true
+            },
+            email: {
+                required: true,
+                email: true,
+                maxlength: 100
+            },
+            mobile: {
+                required: true,
+                minlength : 8,
+                maxlength : 10
+            },
+            address_line1: {
+                required: true,
+                maxlength: 100
+            }
+        },
+        messages: {
+            name: {
+                required: "Collection Point Name is required",
+                lettersonly : "Collection Point name must have letters only"
+            },
+            contact_name: {
+                required: "Contact Person name is required",
+                lettersonly:"Contact Person name must have letters only"
+            },
+            email: {
+                required: "Email is required",
+                email: "Email is not valid"
+            },
+            mobile: {
+                required: "Mobile number is required",
+                minlength: "Invalid mobile number",
+                maxlength: "Invalid mobile number"
+            },
+            address_line1: {
+                required: "Address field is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = new FormData(form);
+            $.ajax({
+                url: "<%=app_url%>/beourpartner",
+                data,
+                type: "POST",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = "<%=app_url%>";
+                        }, 3000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

@@ -1,0 +1,368 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container-fluid gray-bg">
+    <div class="container">
+
+        <div class="credit_sec row">
+            <div class="credit_sec_left col-lg-3 justify-content-center">
+                <img src="images/credit.svg" alt="">
+                <div class="text-center">
+                    <p> Total Food Credits </p>
+                    <p><b><%=food_credits.toFixed(2)%></b>AUD </p>
+                    <a data-toggle="modal" data-target="#addcredit">
+                        <div class="btn btn-primary m-0 mb-xl-0 mb-sm-3"> Add Credit</div>
+                    </a>
+                    <!-- <a class="link" data-toggle="modal" data-target="#addcredit"> Add Credit </a> -->
+                </div>
+            </div>
+            <div class="credit_sec_center col-lg-6 text-center">
+                <p>You can pre book your order and can pick the same from your desired Collection Points or can get it
+                    delivered to your door step. </p>
+            </div>
+            <div class="credit_sec_right text-center col-lg-3">
+                <a href="<%=app_url%>/scheduledbooking">
+                    <div class="btn btn-primary"> Redeem Now</div>
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<div class="container-fluid mb-5">
+    <div class="container">
+        <ul class="nav set_dat " id="pills-tab" role="tablist">
+            <%
+                var active_shift = ""
+                var all_shifts = ""
+                shifts.forEach((shift, index)=>{  
+                    var active = ''
+                    if(index == 0){
+                        active = "active"  
+                        active_shift = shift._id      
+                        all_shifts += shift._id       
+                    }else{
+                        all_shifts += " "+shift._id  
+                    }
+                    %>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link <%=active%>" id="pills-home-tab" data-toggle="pill" href="#pills-<%=shift._id%>"
+                    role="tab">
+                    <%=shift.name%>
+                </a>
+            </li>
+            <%
+                })
+            %>
+        </ul>
+        <div class="tab-content mt-3" id="pills-tabContent">
+            <%
+            shifts.forEach((shift, index)=>{
+                var active = ''
+                if(index == 0){
+                    active = "active"                        
+                }
+                console.log({active,index})
+                %>
+            <div class="tab-pane fade show <%=active%>" id="pills-<%=shift._id%>" role="tabpanel">
+                <div class="row list">
+                </div>
+                <ul class="pagination"></ul>
+            </div>
+            <%
+            })
+        %>
+
+        </div>
+    </div>
+</div>
+<style>
+    .pagination {
+        display: block !important;
+        text-align: center;
+    }
+
+    .pagination>li {
+        display: inline-block;
+    }
+
+    .pagination>li>a {
+        background-color: #dc3545c9;
+        padding: 4px 8px 4px 8px;
+        margin-left: 5px;
+        border-radius: 4px;
+        color: white;
+        list-style: none;
+    }
+</style>
+<%-include('./shared/add-credit.ejs')%>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    location_icon = {
+        shop: `${ASSET_URL}/public/web/images/shop-icon.svg`,
+        van: `${ASSET_URL}/public/web/images/delivery_vehicle.svg`,
+        office: `${ASSET_URL}/public/web/images/office.png`
+    }
+    var active_shift = "<%=active_shift%>"
+    var all_shifts = "<%=all_shifts%>"
+    shifts = all_shifts.split(" ")
+    var options = []
+    var order_lists = []
+    $('#nav-scheduled').addClass('active')
+
+    function renderTabPanes(shift) {
+        options[shift] = {
+            valueNames: [
+                { name: 'image', attr: 'src' },
+                'address',
+                'delivery_type',
+                'orders',
+                'created_date',
+                'scheduled_date',
+                'redeemed',
+                'booking_id',
+                'shift_name'
+            ],
+            item: `<div class="col-md-6">           
+            <div class="card order_card">
+                <div class="order_card_head">
+                    <div>
+                        <img class="image" src="" alt="">
+                    </div>
+                    <div class="order_card_head_left">
+                        <div>
+                            <h4 class="delivery_type">Delivery</h4>
+                            <p> <img src="/public/web/images/location.svg" alt=""> <span class="address"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order_card_body">
+                    <p class="orders"></p>
+                    <p>
+                        Booking ID :<span class="booking_id" style="font-weight:700;"></span><br/>
+                        Time :<span class="shift_name" style="font-weight:700;"></span><br/>
+                        Scheduled At :<span class="scheduled_date"></span><br/>
+                        Created At &nbsp;&nbsp;&nbsp;&nbsp;:<span class="created_date"></span>
+                    </p>
+                    <div class="redeemed"></div>
+                </div>
+            </div>
+        </div>`,
+            page: 6,
+            pagination: true,
+        };
+        order_lists[shift] = new List(`pills-${shift}`, options[shift]);
+    }
+
+
+    function cancelOrder(id) {
+        $.confirm({
+            title: 'Cancel confirmation',
+            content: 'Do you want to cancel this order?',
+            columnClass: 'medium',
+            buttons: {
+                confirm: {
+                    text: 'Confirm',
+                    btnClass: 'btn btn-primary btn-lg btn-round',
+                    keys: ['enter'],
+                    action: function () {
+                        var self = this
+                        $.ajax({
+                            url: "<%=app_url%>/cancelorder",
+                            data: {
+                                _id: id
+                            },
+                            type: "POST",
+                            dataType: "json",
+                            success: function (data) {
+                                var {
+                                    status,
+                                    message,
+                                    errors,
+                                } = data;
+                                errors = typeof errors != 'undefined' ? errors : []
+                                message = typeof message != 'undefined' ? message : null
+                                if (status == true) {
+                                    self.close()
+                                    toastr['success'](message)
+                                    setTimeout(function () {
+                                        window.location.reload()
+                                    }, 3000)
+                                } else {
+                                    toastr['error'](message)
+                                }
+                            }
+                        });
+                        return false
+                    }
+                },
+                cancel: {
+                    text: 'Cancel',
+                    btnClass: 'btn btn-primary btn-lg btn-round',
+                    keys: ['enter'],
+                    action: function () {
+                        // $.alert('Order ');
+                    }
+                }
+            }
+        });
+        return false
+    }
+
+    function renderBookingsList(bookings, shift) {
+        order_lists[shift].clear()
+        $.each(bookings, function (key, booking) {
+            console.log({
+                booking
+            })
+            var { _id: id, address, orders, delivery_type, created_at, scheduled_date, redeemed, can_cancel, can_edit, expired, booking_id, shift:shift_details, company_id } = booking
+            shift_name = ""
+            if(shift_details){
+                let {name} = shift_details
+                shift_name = name
+            }
+            var address_string = ""
+            if (typeof address != 'undefined' && address) {
+                address_string = address.address_line1
+            }
+            var delivery = "Delivery"
+            var image = location_icon.van
+            if(company_id){
+                image = location_icon.office
+                delivery = "Office"
+            }else if (delivery_type != "ONLINE") {
+                image = location_icon.shop
+                delivery = "Collection Point"
+            }
+            var order_string = ""
+            if (orders.length > 0) {
+                $.each(orders, function (key, order) {
+                    if (order_string) {
+                        order_string += ", "
+                    }
+                    order_string += `(${order.quantity}x) ${order.product_name}`
+                })
+            }
+
+            var redeemed_html = `
+                <span class="badge badge-danger">Waiting for delivery</span>
+            `
+            if (can_cancel) {
+                redeemed_html += `
+                    <button class="btn btn-primary btn-sm ml-1" onclick="cancelOrder('${id}')">Cancel Order</button>
+                `
+                if(can_edit){
+                    redeemed_html += `
+                        <a href="<%=app_url%>/editorder/${id}"><button class="btn btn-primary btn-sm ml-1">Edit Order</button></a>
+                    `
+                }
+            }else if(expired){
+                redeemed_html = `
+                    <span class="badge badge-danger">Expired</span>
+                `
+            }else if (redeemed == true) {
+                redeemed_html = `<span class="badge badge-success">Delivered</span>`
+            }
+
+            created_at = moment(created_at).format('YYYY-MM-DD hh:mm a')
+            scheduled_date = moment(scheduled_date).format('YYYY-MM-DD')
+            order_lists[shift].add({
+                image,
+                address: address_string,
+                delivery_type: delivery,
+                orders: order_string,
+                created_date: created_at,
+                scheduled_date,
+                booking_id,
+                redeemed: redeemed_html,
+                shift_name : shift_name
+            })
+        })
+    }
+
+    function getOrdersList(shift) {
+        $.ajax({
+            url: "<%=app_url%>/getscheduledlist",
+            data: {
+                shift
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    bookings
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                bookings = typeof bookings != 'undefined' ? bookings : []
+                if (status == true) {
+                    if (bookings.length > 0) {
+                        renderBookingsList(bookings, shift)
+                    }
+                }
+            }
+        });
+        return false
+    }
+
+    $.each(shifts, function (key, value) {
+        renderTabPanes(value)
+        getOrdersList(value)
+    })
+
+    $("form#credit-form").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            food: {
+                required: true
+            }
+        },
+        messages: {
+            food: {
+                required: "Please enter purchase credit amount"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/addcredit",
+                data: $(form).serialize(),
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        payment_page
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        window.location.href = payment_page
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

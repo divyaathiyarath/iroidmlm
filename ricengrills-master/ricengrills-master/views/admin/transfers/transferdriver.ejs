@@ -1,0 +1,151 @@
+<%-include('../shared/head-panel.ejs')%>
+ 
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Transfer Among Drivers</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Transfer Among Drivers</h4>
+    </div>
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-6">
+                <form id="mainForm" action="javascript:;">
+                    <div class="form-layout form-layout-4 bg-white">
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">From Driver <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose Driver" name="from_driver" id="fromdriver">
+                                    <option label="Choose Driver"></option>
+                                    <%drivers.forEach((driver) => {%>
+                                        <option value="<%=driver._id%>"><%=driver.name%></option> 
+                                    <%})%>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">To Driver <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Driver" name="to_driver" id="todriver">
+                                    <%drivers.forEach((driver) => {%>
+                                        <option label="Choose Driver"></option>
+                                        <option value="<%=driver._id%>"><%=driver.name%></option> 
+                                    <%})%>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <div class="form-layout-footer mg-t-30">
+                                <button class="btn btn-info" type="submit">Submit</button>
+                                <button class="btn btn-secondary" type="button">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="row mg-t-40">
+            
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>From Driver</th>
+                        <th>To Driver</th>
+                        <th>Transfered At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%lists.forEach((driver) => {%>
+                        <tr>
+                            <td><%=driver.from_driver.name%></td>
+                            <td><%=driver.to_driver.name%></td>
+                            <td><%=driver.created_at%></td>
+                        </tr>
+                    <%})%>
+                </tbody>
+            </table>
+            <%if(lists.length == 0) {%>
+                <div class="alert alert-bordered alert-info" role="alert">
+                    <strong class="d-block d-sm-inline-block-force">Ooops !</strong> No result found.
+                </div><!-- alert -->
+            <%}%>
+            </div>
+    </div>
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+
+<script>
+        $("#transferrequests").addClass('active show-sub')
+        $("#transferdriver").addClass('active')    
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            from_driver: {
+                required: true
+            },
+            to_driver: {
+                required: true
+            }
+        },
+        messages: {
+            from_driver: {
+                required: "From driver is required"
+            },
+            to_driver: {
+                required: "To driver is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = $(form).serialize();
+            $.ajax({
+                url: "<%=app_url%>/transfers/transferdriver",
+                data,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.reload()
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+
+<%-include('../shared/footer-panel.ejs')%>

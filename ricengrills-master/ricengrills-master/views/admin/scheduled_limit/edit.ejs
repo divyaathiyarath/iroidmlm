@@ -1,0 +1,175 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Scheduled Stock Limit</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Scheduled Stock Limit</h4>
+    </div>
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-12">
+                <form id="mainForm">
+                    <div class="form-layout form-layout-1">
+                        <div class="row mg-b-5">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <input type="hidden" name="id" value="<%=stock_limit._id%>">
+                                    <label class="form-control-label">Suburb: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Suburb"
+                                        name="suburb_id" id="suburbId">
+                                        <option label="Choose Suburb"></option>
+                                        <%suburbs.forEach((suburb) => {%>
+                                        <option value="<%= suburb._id%>" <%if(stock_limit.suburb_id.toString() == suburb._id.toString()) {%> selected <%}%>><%=suburb.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Shift: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Shift"
+                                        name="shift_id" id="shiftId">
+                                        <option label="Choose Shift"></option>
+                                        <%shifts.forEach((shift) => {%>
+                                        <option value="<%=shift._id%>" <%if(stock_limit.shift_id.toString() == shift._id.toString()) {%>selected<%}%> ><%=shift.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                        </div><!-- row -->
+                        <div class="row mg-b-5">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Product: <span class="tx-danger">*</span></label>
+                                    <select class="form-control select2-show-search" data-placeholder="Choose Product"
+                                        name="product_id" id="productId">
+                                        <option label="Choose Product"></option>
+                                        <%products.forEach((product) => {%>
+                                        <option value="<%=product._id%>" <%if(stock_limit.product_id.toString() == product._id.toString()){%>selected<%}%> ><%=product.name%></option>
+                                        <%})%>
+                                    </select>
+                                </div>
+                            </div><!-- col-4 -->
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Limit: <span class="tx-danger">*</span></label>
+                                    <input class="form-control" type="number" name="limit" id="limitId" placeholder="Enter Limit" value="<%=stock_limit.limit%>">
+                                </div>
+                            </div><!-- col-4 -->
+                        </div><!-- row -->
+
+                        <div class="form-layout-footer">
+                            <button type="submit" class="btn btn-info">Update</button>
+                            <a href="<%=app_url%>/schedule-stock-limit" class="btn btn-secondary">Cancel</a>
+                        </div><!-- form-layout-footer -->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+<script>
+    $("#masters").addClass('active show-sub')
+    $("#schedulelimit").addClass('active')
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            suburb_id: {
+                required: true
+            },
+            shift_id: {
+                required: true
+            },
+            product_id: {
+                required: true
+            },
+            limit: {
+                required: true
+            }
+        },
+        messages: {
+            suburb_id: {
+                required: "Suburb is required"
+            },
+            shift_id: {
+                required: "Shift is required"
+            },
+            product_id: {
+                required: 'Product is required'
+            },
+            limit: {
+                required: 'Limit is required'
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = $(form).serialize();
+            // var product_id = []; 
+            // var suburb_id = [];   
+            // $("#productId :selected").each(function(){
+            //     product_id.push($(this).val()); 
+            // }); 
+            // $("#suburbId :selected").each(function(){
+            //     suburb_id.push($(this).val()); 
+            // });
+            // limit = $("#limitId").val()
+            // shift_id = $("#shiftId").val()
+            $.ajax({
+                url: "<%=app_url%>/schedule-stock-limit/update",
+                data,
+                // data: {
+                //     suburb_id,
+                //     product_id,
+                //     shift_id,
+                //     limit
+                // },
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href="<%=app_url%>/schedule-stock-limit"
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

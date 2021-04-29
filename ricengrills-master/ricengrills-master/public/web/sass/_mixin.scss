@@ -1,0 +1,217 @@
+@mixin transition($valu) {
+  -webkit-transition: $valu;
+  -moz-transition: $valu;
+  -o-transition: $valu;
+  transition: $valu;
+}
+
+@mixin translate($valu, $valu2) {
+  -webkit-transform: translate($valu, $valu2);
+  -moz-transform: translate($valu, $valu2);
+  -o-transform: translate($valu, $valu2);
+  -ms-transform: translate($valu, $valu2);
+  transform: translate($valu, $valu2);
+}
+
+@mixin placeholder($color) {
+  ::-webkit-input-placeholder {
+    color: $color;
+  }
+  ::-moz-placeholder {
+    color: $color;
+  }
+  :-ms-input-placeholder {
+    color: $color;
+  }
+  :-moz-placeholder {
+    color: $color;
+  }
+}
+
+@mixin scale($valu) {
+  -webkit-transform: scale($valu);
+  -moz-transform: scale($valu);
+  -o-transform: scale($valu);
+  -ms-transform: scale($valu);
+  transform: scale($valu);
+}
+
+ 
+
+@mixin gradient-style1($color1, $color2) {
+  background: $color1; /* Old browsers */
+  background: -moz-linear-gradient(top, $color1 1%, $color2 50%, $color1 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, $color1 1%, $color2 50%, $color1 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(
+    to bottom,
+    $color1 1%,
+    $color2 50%,
+    $color1 100%
+  ); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$color1}', endColorstr='#{$color2}',GradientType=0 );
+}
+
+@mixin gradient-style2($color1, $color2) {
+  /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#fefcea+0,f1da36+100;Gold+3D */
+  background: $color1; /* Old browsers */
+  background: -moz-linear-gradient(-45deg, $color1 0%, $color2 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(-45deg, $color1 0%, $color2 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(135deg, $color1 0%, $color2 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$color1}', endColorstr='#{$color2}',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+@mixin gradient-vertical($color1, $color2) {
+  background: -moz-linear-gradient(top, $color1 0%, $color2 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, $color1 0%, $color2 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(
+    to bottom,
+    $color1 0%,
+    $color2 100%
+  ); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#{$color1}', endColorstr='#{$color2}',GradientType=0 );
+}
+
+@mixin textfill($color1, $color2) {
+  background: -webkit-linear-gradient(top, $color1 0%, $color2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin rotate($rotate) {
+  -webkit-transform: rotate(#{$rotate}deg);
+  -moz-transform: rotate(#{$rotate}deg);
+  -o-transform: rotate(#{$rotate}deg);
+  -ms-transform: rotate(#{$rotate}deg);
+  transform: rotate(#{$rotate}deg);
+}
+
+@mixin animation-delay($valu) {
+  -webkit-animation-delay: #{$valu}s;
+  animation-delay: #{$valu}s;
+}
+
+@mixin overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*********************
+BREAKPOINTS
+*********************/
+
+@mixin breakpoint($point) {
+  @if $point == xl {
+    @media (min-width: 1200px) {
+      @content;
+    }
+  } @else if $point == lg {
+    @media (min-width: 992px) {
+      @content;
+    }
+  } @else if $point == md {
+    @media (min-width: 768px) {
+      @content;
+    }
+  } @else if $point == sm {
+    @media (min-width: 576px) {
+      @content;
+    }
+  } @else if $point == col {
+    @media (min-width: 450px) {
+      @content;
+    }
+  }
+}
+
+@mixin breakpoint-down($point) {
+  @if $point == mini-desktop {
+    @media (max-width: 1366px) {
+      @content;
+    }
+  } @else if $point == lg {
+    @media (max-width: 1200px) {
+      @content;
+    }
+  } @else if $point == md {
+    @media (max-width: 992px) {
+      @content;
+    }
+  } @else if $point == sm {
+    @media (max-width: 768px) {
+      @content;
+    }
+  } @else if $point == phone {
+    @media (max-width: 576px) {
+      @content;
+    }
+  } @else if $point == mobile {
+    @media (max-width: 451px) {
+      @content;
+    }
+  }
+}
+
+body.screen {
+  &:after {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    background-color: #000;
+    color: #fff;
+    content: "normal";
+    padding: 2px 5px;
+    font-size: 8px;
+    display: block;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    z-index: 999;
+    @include breakpoint(col) {
+      content: "col";
+    }
+    @include breakpoint(sm) {
+      content: "sm";
+    }
+    @include breakpoint(md) {
+      content: "md";
+    }
+    @include breakpoint(lg) {
+      content: "lg";
+    }
+    @include breakpoint(xl) {
+      content: "xl";
+    }
+  }
+  &:before {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    background-color: #000;
+    color: #fff;
+    content: "normal";
+    padding: 2px 5px;
+    font-size: 8px;
+    display: block;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    z-index: 999;
+    @include breakpoint-down(mini-desktop) {
+      content: "mini-desktop ( max )";
+    }
+    @include breakpoint-down(lg) {
+      content: "LG ( max )";
+    }
+    @include breakpoint-down(md) {
+      content: "MD ( max )";
+    }
+    @include breakpoint-down(sm) {
+      content: "SM ( max )";
+    }
+    @include breakpoint-down(phone) {
+      content: "Phone ( max )";
+    }
+    @include breakpoint-down(mobile) {
+      content: "Mobile ( max )";
+    }
+  }
+}

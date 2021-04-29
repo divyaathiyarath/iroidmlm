@@ -1,0 +1,28 @@
+<div class="modal fade" id="suburb_modal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content allergen_pop_up" id="suburb-modal-content">
+
+            <a class="center_btn" href="javascript:;" data-dismiss="modal">
+                Update
+            </a>
+
+            <div class="modal-body">
+                <h5 class="headding"> Choose Suburb</h5>
+                <div class="col-sm-12 row">
+                    <select class="form-control select2-show-search-modal" data-placeholder="Choose suburb" name="suburb"
+                        id="suburb-filter" style="width: 100%;">
+                        <option value="ALL">All Suburbs</option>
+                        <%
+                            suburbs.forEach(suburb=>{
+                                %>
+                        <option value="<%=suburb._id%>"><%=suburb.name%></option>
+                        <%
+                            })
+                        %>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

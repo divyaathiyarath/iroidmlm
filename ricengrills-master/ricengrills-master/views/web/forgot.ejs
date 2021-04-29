@@ -1,0 +1,80 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="container-fluid login_fluid">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6" id="loginWindow">
+                <div class="account_section Login">
+                    <h4 class="headding text-center"> Forgot Password </h4>
+                    <form action="javascript:;" class="mt-5 login_inner" id="mainForm">
+                        <div class="form-group">
+                            <input type="email" class="form-control" id="mobileFormControlInput1"
+                                placeholder="Email" name="email">
+                        </div>
+                        <div class="d-flex justify-content-end mb-3 lsil">
+                            <a href="<%=app_url%>/login"> Back to login </a>
+                        </div>
+                         <!-- New End -->
+                        <button type="submit" class="btn btn-primary btn-block submitBtn"> Reset Password </button>
+                        <p class="small text-center mt-4 lsil"> New to Rice N Grills ? <a href="<%=app_url%>/signup"
+                                id="">Sign Up</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            email: {
+                required: true,
+            }
+        },
+        messages: {
+            email: {
+                required: "Email is required.",
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/sendforgotpassword",
+                data: $('form#mainForm').serialize(),
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                    } = data;
+                    message = typeof message != 'undefined' ? message : null
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(() => {
+                            window.location.href = APP_URL + '/login'
+                        }, 3000);
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                    }
+                    $('.submitBtn').prop('disabled', false)
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('./shared/footer-panel.ejs')%>

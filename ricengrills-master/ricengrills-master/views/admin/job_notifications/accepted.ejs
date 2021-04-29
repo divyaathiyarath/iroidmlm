@@ -1,0 +1,145 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Job Notifications</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Drivers list</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <table class="table table-bordered bg-white border-top-1 border border-light">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let i = 0 %>
+                <% drivers.forEach(driver => {
+                    let {_id,name, email, mobile, accepted} = driver          
+                    console.log({accepted})          
+                    i++ 
+                %>
+                <tr>
+                    <td>
+                        <%= i %>
+                    </td>
+                    <td>
+                        <%= name %>
+                    </td>
+                    <td>
+                        <%= email %>
+                    </td>
+                    <td>
+                        <%= mobile %>
+                    </td>
+                    <td>
+                        <div class="toggle-wrapper">
+                            <div data-id="<%=_id%>" class="toggle toggle-light primary"
+                                <% if(accepted) { %>data-toggle-on="true" <%}%> ></div>
+                        </div>
+                    </td>
+                </tr>
+                <% });%> </tbody>
+        </table>
+    </div>
+    <!-- br-pagebody -->
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<%-include('../shared/scripts.ejs')%>
+<script>
+    var job_id = "<%=job_id%>"
+    $('.toggle').toggles({
+        text: {
+            on: 'Approve',
+            off: 'Approve'
+        },
+        height: 26,
+        width: 100
+    });
+
+    $('.toggle').on('toggle', function (e, active) {
+        var id = $(this).data('id')
+        var approve = false
+        if (active) {
+            approve = true
+        }
+        $.ajax({
+            url: "<%=app_url%>/jobnotifications/approve",
+            data: {
+                id,
+                approve,
+                job_id
+            },
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                console.log('success')
+            }
+        });
+    });
+    function deleteNotification(notification) {
+        $('.submitBtn').prop('disabled', true)
+        $.confirm({
+            title: 'Confirm!',
+            content: 'Do you want to delete this notification?',
+            buttons: {
+                Delete: function () {
+                    $.ajax({
+                        url: "<%=app_url%>/notifications/delete",
+                        data: {
+                            notification
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function () {
+                                    window.location.href = "<%=app_url%>/notifications";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function (error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                },
+                Cancel: function () {
+                    console.log('cancelled')
+                }
+            }
+        });
+    }
+</script>
+<%-include('../shared/footer-panel.ejs')%>

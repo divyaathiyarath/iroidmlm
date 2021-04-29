@@ -1,0 +1,152 @@
+<%-include('../shared/head-panel.ejs')%>
+
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Collection Point</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Collection Point</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-6">
+                <form id="mainForm" action="javascript:;">
+                    <div class="form-layout form-layout-4 bg-white">
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Collection Point <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" data-placeholder="Choose Collection Point" name="collection_point" id="cp">
+                                    <option label="Choose Collection Point"></option>
+                                    <%collection_points.forEach((cp) => {%>
+                                        <option value="<%=cp._id%>"><%=cp.name%></option> 
+                                    <%})%>
+                                </select>
+                            </div>
+                        </div>
+                        <%products.forEach((product) => {%>
+                            <div class="row mg-t-20">
+                                <label class="col-sm-4 form-control-label"><%=product.name%>:</label>
+                                <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                    <!-- <input type="text" name="products" value="<%=product._id%>"> -->
+                                    <input type="number" class="form-control products form-control-sm" id="input-<%=product._id%>" placeholder="count" name="products[<%=product._id%>]">
+                                </div>
+                            </div>
+                        <%})%>
+                        
+                            <div class="form-layout-footer mg-t-30">
+                                <button class="btn btn-info" type="submit">Submit</button>
+                                <button class="btn btn-secondary" type="button">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="row mg-t-40">
+                <table class="table bg-white pd-t-20">
+                    <thead>
+                        <th>Collection Point Name</th>
+                        <th>Items</th>
+                        <th>Created At</th>
+                    </thead>
+                    <tbody>
+                        <%
+                            lists.forEach((list) => {
+                                let { created_at, collection_point, products }  = list
+                                let collectionpoint_name =  ""
+                                if(collection_point){
+                                    collectionpoint_name  =  collection_point.name
+                                }
+                        %>
+                            <tr>
+                                <td><%=collectionpoint_name%></td>
+                                <td>
+                                    <%
+                                        if(products.length > 0){
+                                            products.forEach(prd=>{
+                                                %>
+                                                    <span class="badge badge-primary ml-1"><%= prd.name +"-"+prd.stock %></span>
+                                                <%
+                                            })
+                                        }
+                                    %>
+                                </td>
+                                <td>
+                                    <%= moment(created_at).format('YYYY-MM-DD hh:mm a')%>
+                                </td>
+                            </tr>    
+                        <%})%>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%-include('../shared/scripts.ejs')%>
+<script>
+        $("#transferrequests").addClass('active show-sub')
+        $("#collectionpoint").addClass('active')
+    $("form#mainForm").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            collection_point: {
+                required: true
+            }
+        },
+        messages: {
+            collection_point: {
+                required: "Collection point is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            var form = document.getElementById("mainForm");
+            var data = $(form).serialize();
+            $.ajax({
+                url: "<%=app_url%>/transfers/collectionpoints",
+                data,
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        data
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+                    data = typeof data != 'undefined' ? data : {}
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.reload()
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', true)
+                }
+            });
+            return false;
+        }
+    });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

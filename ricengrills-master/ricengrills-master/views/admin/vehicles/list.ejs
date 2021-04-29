@@ -1,0 +1,130 @@
+<%-include('../shared/head-panel.ejs')%>
+    <!-- ########## START: MAIN PANEL ########## -->
+    <div class="br-mainpanel">
+        <div class="br-pageheader pd-y-15 pd-l-20">
+            <nav class="breadcrumb pd-0 mg-0 tx-12">
+                <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                    <%=SITE_NAME%>
+                </a>
+                <span class="breadcrumb-item active">Vehicles</span>
+            </nav>
+        </div>
+        <!-- br-pageheader -->
+        <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+            <h5 class="tx-gray-800 mg-b-5">Refilling Vehicles</h4>
+        </div>
+
+        <div class="br-pagebody">
+            <form action="">
+                <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                    <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                        <input type="text" class="form-control" name="search" value="<%=search%>" placeholder="Search registration number">
+                        <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                        <a href="<%=app_url%>/vehicles" type="reset" class="btn btn-danger pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+            <table class="table bg-white">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Registration Number</th>
+                        <th>Insurance</th>
+                        <th>Insurance Validity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let i=0 %>
+                        <% vehicles.forEach(vehicle => { i++ %>
+                            <tr>
+                                <td>
+                                    <%= i %>
+                                </td>
+                                <td>
+                                    <%= vehicle.registration_number %>
+                                </td>
+                                <td>
+                                    <a target="_blank" href="<%=asset_url +'/'+ vehicle.insurance %>">
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <%=moment(vehicle.insurance_validity).format('YYYY-MM-DD')%>
+                                </td>
+                                <td>
+                                    <a class="submitBtn"  href="<%=app_url%>/vehicles/edit/<%=vehicle._id%>">
+                                    <i class="fa fa-pencil"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a class="submitBtn" href="javascript:;" class="text-danger" onclick="deleteVehicle('<%=vehicle._id%>')">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <% });%>
+                </tbody>
+            </table>
+            <%-include('../shared/pagination.ejs',pages)%>
+        </div>
+        <!-- br-pagebody -->
+    </div>
+    <!-- br-mainpanel -->
+    <!-- ########## END: MAIN PANEL ########## -->
+    <%-include('../shared/scripts.ejs')%>
+        <script>
+    $("#vehicles").addClass('active show-sub')
+    $("#refillingvehicle").addClass('active')
+            function deleteVehicle(vehicle) {
+                $('.submitBtn').prop('disabled', true)
+                $.confirm({
+                    title: 'Confirm!',
+                    content: 'Do you want to delete this vehicle?',
+                    buttons: {
+                        Delete: function() {
+                            $.ajax({
+                                url: "<%=app_url%>/vehicles/delete",
+                                data: {
+                                    vehicle
+                                },
+                                type: "POST",
+                                dataType: "json",
+                                success: function(data) {
+                                    var {
+                                        status,
+                                        message,
+                                        errors,
+                                        data
+                                    } = data;
+                                    errors = typeof errors != 'undefined' ? errors : []
+                                    message = typeof message != 'undefined' ? message : null
+                                    data = typeof data != 'undefined' ? data : {}
+
+                                    if (status == true) {
+                                        toastr["success"](message);
+                                        setTimeout(function() {
+                                            window.location.href = "<%=app_url%>/vehicles";
+                                        }, 1000)
+                                    } else {
+                                        if (errors.length > 0) {
+                                            toastr["error"](errors[0]);
+                                        } else if (message) {
+                                            toastr["error"](message);
+                                        }
+                                        $('.submitBtn').prop('disabled', false)
+                                    }
+                                },
+                                error: function(error) {
+                                    $('.submitBtn').prop('disabled', false)
+                                }
+                            });
+                        },
+                        Cancel: function() {
+                            $.alert('Canceled!');
+                        }
+                    }
+                });
+            }
+        </script>
+        <%-include('../shared/footer-panel.ejs')%>

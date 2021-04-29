@@ -1,0 +1,106 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="container_fluid user_head">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 col-lg-8 col-md-10 col-10">
+                <div class="user_head_left">
+                    <div class="user_head_profile">
+                        <div class="pic"> <img src="<%=asset_url%>/public/web/images/user-icon.svg" alt=""> </div>
+                        <div>
+                            <b> <%=session.name%> </b>
+                            <p> <%=session.email%> </p>
+                            <p> <%=session.mobile%> </p>
+                            <p> <a href="<%=app_url%>/logout" style="color: white; list-style: none;"><u>Logout</u></a> </p>
+                        </div>
+                    </div>
+                    <a href="<%=app_url%>/profile" class="link"> <u>Edit Profile</u></a>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-4 col-md-2 col-2 ">
+                <div class="user_head_right">
+                    <nav class="navbar navbar-expand-xl">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#user_menu" aria-controls="user_menu" aria-expanded="false" aria-label="Toggle navigation">
+                            <img src="<%=asset_url%>/public/web/images/menu.svg" alt="">
+                        </button>
+                        <div class="collapse navbar-collapse" id="user_menu">
+                          <ul class="navbar-nav aic">
+                            <!-- <li>
+                              <a href="#">Home</a>
+                            </li> -->                           
+                            <li><a href="<%=app_url%>/user" id="nav-orders" class="">Orders</a>
+                            </li>
+                            <li><a href="<%=app_url%>/scheduled" id="nav-scheduled" class="">Scheduled</a></li>
+                            <li><a href="<%=app_url%>/bulkorders" id="nav-bulk" class="">Bulk Orders</a></li>
+                            <li><a href="<%=app_url%>/addresses" id="nav-addresses" class="">Addresses</a></li>
+                            <!-- <li><a href="change-password.html" id="" class="">Change Password</a> -->
+                            </li>
+                            <li><a href="#" id="" class="notification df aic">
+                                <img src="<%=asset_url%>/public/web/images/notification.svg" alt="">
+                            </a></li>
+                          </ul>                           
+                        </div>
+                      </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container-fluid pt-5 pb-5">
+    <div class="container">
+        <h5 class="headding mb-5"> Notifications </h5>
+
+        <div class="noti__card unread">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/3502/3502601.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, delectus?</p>
+            </div>
+        </div>
+        <div class="noti__card unread">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/3144/3144467.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, delectus?</p>
+            </div>
+        </div>
+        <div class="noti__card read">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/3500/3500877.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, <a href="#"> Delectus? </a></p>
+                <p>Lorem ipsum dolor, <b> sit amet consectetur adipisicing elit </b>. Ab laborum fugit placeat tempora accusantium exercitationem beatae vero quod odit molestias?</p>
+            </div>
+        </div>
+        <div class="noti__card read">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/3459/3459925.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, <a href="#"> Delectus? </a></p>
+                <p>Lorem ipsum dolor, <b> sit amet consectetur adipisicing elit </b>. Ab laborum fugit placeat tempora accusantium exercitationem beatae vero quod odit molestias?</p>
+            </div>
+        </div>
+        <div class="noti__card">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/3338/3338599.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, delectus?</p>
+            </div>
+        </div>
+        <div class="noti__card">
+            <img src="https://www.flaticon.com/svg/static/icons/svg/2125/2125382.svg" alt="">
+            <div>
+                <h5> Order has been Shipped </h5>
+                <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Non, delectus?</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<%-include('./shared/scripts.ejs')%>
+<!-- scripts here -->
+<%-include('./shared/footer-panel.ejs')%>

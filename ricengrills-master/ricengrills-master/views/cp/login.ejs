@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Meta -->
+    <meta name="description" content="Food delivery cum tracking application dashboard">
+    <meta name="author" content="Iroid technologies">
+    <title>riceNgrills</title>
+    <!-- css -->
+    <link href="<%=asset_url%>/public/lib/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="<%=asset_url%>/public/lib/Ionicons/css/ionicons.css" rel="stylesheet">
+    <link rel="stylesheet" href="<%=asset_url%>/public/css/bracket.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="<%=asset_url%>/public/css/ricengrills.css">
+</head>
+
+<body>
+
+    <div class="d-flex align-items-center justify-content-center bg-br-primary ht-100v">
+        <div class="login-wrapper wd-300 wd-xs-350 pd-25 pd-xs-40 bg-white rounded shadow-base loginDiv">
+            <div class="signin-logo tx-center tx-28 tx-bold tx-inverse"><span class="tx-normal">[</span> riceNgrills <span class="tx-normal">]</span></div>
+            <div class="tx-center mg-b-10">The Collection Point Panel For riceNgrills</div>
+            <form action="javascript:;" id="mainForm">
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="Enter your email" name="email">
+                </div>
+                <!-- form-group -->
+                <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Enter your password" name="password">
+                    <a href="javascript:;" onclick="showForgotDiv()" class="tx-info tx-12 d-block mg-t-10">Forgot password?</a>
+                </div>
+                <!-- form-group -->
+                <button type="submit" class="btn btn-info btn-block submitBtn">Sign In</button>
+            </form>
+        </div>
+        <!-- login-wrapper -->
+
+        <!-- forgot div -->
+        <div class="login-wrapper wd-300 wd-xs-350 pd-25 pd-xs-40 bg-white rounded shadow-base forgotDiv" style="display: none;">
+            <div class="signin-logo tx-center tx-28 tx-bold tx-inverse"><span class="tx-normal">[</span> riceNgrills <span class="tx-normal">]</span></div>
+            <div class="tx-center mg-b-10">Forgot your password?</div>
+            <form action="javascript:;" id="forgotForm">
+                <div class="form-group">
+                    <input type="email" class="form-control" placeholder="Enter your email" name="email">
+                </div>
+                <div class="form-group">
+                    <a href="javascript:;" onclick="showLoginDiv()" class="tx-info tx-12 d-block mg-t-10"><i class="fa fa-arrow-left"></i> Back to login</a>
+                </div>
+                <button type="submit" class="btn btn-info btn-block submitBtn">Submit</button>
+            </form>
+        </div>
+    </div>
+    <!-- d-flex -->
+
+    <script src="<%=asset_url%>/public/lib/jquery/jquery.js"></script>
+    <script src="<%=asset_url%>/public/lib/popper.js/popper.js"></script>
+    <script src="<%=asset_url%>/public/lib/bootstrap/bootstrap.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.1/dist/jquery.validate.min.js"></script>
+    <script>
+        // Submit login form
+        $("form#mainForm").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true
+                }
+            },
+            messages: {
+                email: {
+                    required: "Email is required.",
+                    email: 'Invalid email'
+                },
+                password: {
+                    required: "Password is required."
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                $.ajax({
+                    url: "<%=app_url%>/login",
+                    data: $(form).serialize(),
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function() {
+                                window.location.href = "<%=app_url%>";
+                            }, 1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', true)
+                    }
+                });
+                return false;
+            }
+        });
+
+        function showForgotDiv() {
+            $('#mainForm').trigger('reset')
+            $('.loginDiv').hide()
+            $('.forgotDiv').slideToggle("slow");
+        }
+
+        function showLoginDiv() {
+            $('#forgotForm').trigger('reset')
+            $('.loginDiv').slideToggle('slow')
+            $('.forgotDiv').hide()
+        }
+
+
+        $("form#forgotForm").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true
+                }
+            },
+            messages: {
+                email: {
+                    required: "Email is required.",
+                    email: 'Invalid email'
+                },
+                password: {
+                    required: "Password is required."
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                $.ajax({
+                    url: "<%=app_url%>/forgot-password",
+                    data: $(form).serialize(),
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data,
+                            reset_link
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            console.log(reset_link)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                });
+                return false;
+            }
+        });
+    </script>
+</body>
+
+</html>

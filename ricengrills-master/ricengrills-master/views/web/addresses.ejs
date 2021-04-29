@@ -1,0 +1,297 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container-fluid normal-fluid">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col">
+                <h5 class="headding"> Your Address </h5>
+                <hr class="mb-4">
+            </div>
+        </div>
+        <div class="row">
+            <%
+            if(addresses.length > 0){
+                addresses.forEach(addr=>{
+                    var address_card_html = ""
+                    var {_id,address_type,address_line1,appartment,house_flat_no,landmark,contact_person} = addr
+                    address_card_html += `<div class="address_card"><u>${address_type}</u><br/>${address_line1}<br/>`;
+                    (house_flat_no) ? address_card_html += `${house_flat_no}<br/>` : "";
+                    (appartment) ? address_card_html += `${appartment}<br/>`: "";
+                    (landmark) ? address_card_html += `Street Name : ${landmark}<br/>`: "";
+                    address_card_html += `
+                    <div class="btn btn-dark btn-sm edit-btn" data-address="${_id}"> Edit </div>
+                        <div class="btn  delete-btn submitBtn" data-address="${_id}"> Delete </div>
+                    </div>
+                    `
+                    %>
+            <div class="col-md-6 mb-4 mb-md-0 mt-1">
+                <%-address_card_html%>
+            </div>
+            <%
+                })
+            }else{
+                %>
+            <div class="alert alert-warning col-sm-12">Please add in your delivery address to start ordering</div>
+            <%
+            }
+            %>
+
+        </div>
+        <hr class="mt-4 mb-4">
+        <div class="btn btn-primary" onclick="newAddressModal()">Add New Address</div>
+    </div>
+</div>
+<%-include('./shared/address-modal.ejs')%>
+<%-include('./shared/scripts.ejs')%>
+<style>
+    .pac-container {
+        z-index: 10000 !important;
+    }
+</style>
+<script src="<%=asset_url%>/public/js/googleplaces.js"></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaSZjnljvhBYICw_WUf9uijK-LWZI0pyo&libraries=places&callback=initAutocomplete"></script>
+<script>
+    var select2 = $('.select2-show-search').select2({
+        minimumResultsForSearch: '',
+        dropdownParent: $("#address-modal")
+    });
+
+    $('#nav-addresses').addClass('active')
+    function newAddressModal() {
+        var el = $('#address-form')
+        $(el).find('input[name="_id"]').val('')
+        $(el).find('select[name="address_type"]').val('')
+        $(el).find('select[name="address_type"]').trigger('change')
+        $(el).find('input[name="address_line1"]').val('')
+        $(el).find('input[name="lat"]').val('')
+        $(el).find('input[name="lng"]').val('')
+        $(el).find('input[name="house_flat_no"]').val('')
+        $(el).find('input[name="appartment"]').val('')
+        $(el).find('input[name="landmark"]').val('')
+        $(el).find('input[name="to_reach"]').val('')
+        $(el).find('select[name="suburb"]').val('')
+        $(el).find('select[name="suburb"]').trigger('change')
+        $(el).find('input[name="contact_person"]').val('')
+        $('#address-modal').modal('toggle')
+    }
+
+    function checkLatLng(el) {
+        var val = $(el).val();
+        console.log({
+            val
+        })
+        if (!val) {
+            $('#input-lat').val(``);
+            $('#input-lng').val(``);
+        }
+        var lat = $('#input-lat').val();
+        if (!lat) {
+            $(el).val(``);
+        }
+    }
+
+    $("form#address-form").validate({
+        normalizer: function (value) {
+            return $.trim(value);
+        },
+        rules: {
+            address_type: {
+                required: true,
+            },
+            address_line1: {
+                required: true,
+            },
+            house_flat_no: {
+                required: false,
+            },
+            appartment: {
+                required: false,
+            },
+            landmark: {
+                required: false,
+            },
+            to_reach: {
+                required: false,
+            },
+            contact_person: {
+                required: false,
+            }
+        },
+        messages: {
+            address_type: {
+                required: "Address type is required",
+            },
+            address_line1: {
+                required: "Address is required",
+            },
+            house_flat_no: {
+                required: "Unit is required",
+            },
+            appartment: {
+                required: "Street number is required",
+            },
+            landmark: {
+                required: "Street name is required",
+            },
+            to_reach: {
+                required: "Instructions reach location is required"
+            },
+            contact_person: {
+                required: "Contact person name is required"
+            }
+        },
+        submitHandler: function (form) {
+            $('.submitBtn').prop('disabled', true)
+            $.ajax({
+                url: "<%=app_url%>/address",
+                data: $(form).serialize(),
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var {
+                        status,
+                        message,
+                        errors,
+                        mobile
+                    } = data;
+                    errors = typeof errors != 'undefined' ? errors : []
+                    message = typeof message != 'undefined' ? message : null
+
+                    if (status == true) {
+                        toastr["success"](message);
+                        setTimeout(function () {
+                            window.location.href = '<%=app_url%>/addresses'
+                            $('.submitBtn').prop('disabled', false)
+                        }, 1000)
+                    } else {
+                        if (errors.length > 0) {
+                            toastr["error"](errors[0]);
+                        } else if (message) {
+                            toastr["error"](message);
+                        }
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                },
+                error: function (error) {
+                    $('.submitBtn').prop('disabled', false)
+                }
+            });
+            return false;
+        }
+    });
+
+
+    $('.delete-btn').on('click', function () {
+        var addr_id = $(this).data('address')
+        $.confirm({
+            title: 'Confirm deletion!',
+            content: '',
+            buttons: {
+                confirm: function () {
+                    $.ajax({
+                        url: "<%=app_url%>/address/delete",
+                        data: {
+                            address_id: addr_id
+                        },
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            var {
+                                status,
+                                message,
+                                errors
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function () {
+                                    window.location.href = '<%=app_url%>/addresses'
+                                    $('.submitBtn').prop('disabled', false)
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function (error) {
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                    });
+                    return false
+                },
+                cancel: function () {
+                    $.alert('Canceled!');
+                }
+            }
+        });
+        return false
+    })
+
+    function renderAddress(address) {
+        console.log(address.user_id)
+        if (address) {
+            var { _id, address_type, address_line1, location, house_flat_no, appartment, landmark, to_reach, suburb_id, contact_person } = address
+            var el = $('#address-form')
+            $(el).find('input[name="_id"]').val(_id)
+            $(el).find('select[name="address_type"]').val(address_type)
+            $(el).find('select[name="address_type"]').trigger('change')
+            $(el).find('input[name="address_line1"]').val(address_line1)
+            $(el).find('input[name="lat"]').val(location.coordinates[1])
+            $(el).find('input[name="lng"]').val(location.coordinates[0])
+            $(el).find('input[name="house_flat_no"]').val(house_flat_no)
+            $(el).find('input[name="appartment"]').val(appartment)
+            $(el).find('input[name="landmark"]').val(landmark)
+            $(el).find('input[name="to_reach"]').val(to_reach)
+            $(el).find('select[name="suburb"]').val(suburb_id)
+            $(el).find('select[name="suburb"]').trigger('change')
+            $(el).find('input[name="contact_person"]').val(contact_person)
+        }
+    }
+
+    $('.edit-btn').on('click', function () {
+        var addr_id = $(this).data('address')
+        $.ajax({
+            url: "<%=app_url%>/address/one",
+            data: {
+                address_id: addr_id
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    address
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                address = typeof address != 'undefined' ? address : null
+
+                if (status == true) {
+                    renderAddress(address)
+                    $('#address-modal').modal('toggle')
+                } else {
+                    if (errors.length > 0) {
+                        toastr["error"](errors[0]);
+                    } else if (message) {
+                        toastr["error"](message);
+                    }
+                    $('.submitBtn').prop('disabled', false)
+                }
+            },
+            error: function (error) {
+                $('.submitBtn').prop('disabled', false)
+            }
+        });
+        return false
+    })
+</script>
+<%-include('./shared/footer-panel.ejs')%>

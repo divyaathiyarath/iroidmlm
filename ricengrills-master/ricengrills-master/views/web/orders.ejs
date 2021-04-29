@@ -1,0 +1,173 @@
+<%- include('./shared/head-panel.ejs')%>
+<%- include('./shared/user-panel.ejs')%>
+<div class="container-fluid normal-fluid">
+    <div class="container" id="order-list">
+        <div class="row list">
+        </div>
+        <ul class="pagination"></ul>
+        <style>
+            .pagination {
+                display: block !important;
+                text-align: center;
+            }
+
+            .pagination>li {
+                display: inline-block;
+            }
+
+            .pagination>li>a {
+                background-color: #dc3545c9;
+                padding: 4px 8px 4px 8px;
+                margin-left: 5px;
+                border-radius: 4px;
+                color: white;
+                list-style: none;
+            }
+        </style>
+    </div>
+</div>
+</div>
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    $('#nav-orders').addClass('active')
+
+    location_icon = {
+        shop: `${ASSET_URL}/public/web/images/shop-icon.svg`,
+        van: `${ASSET_URL}/public/web/images/delivery_vehicle.svg`,
+        office: `${ASSET_URL}/public/web/images/office.png`
+    }
+
+    var options = {
+        valueNames: [
+            { name: 'image', attr: 'src' },
+            'address',
+            'delivery_type',
+            'orders',
+            'created_date',
+            'scheduled_date',
+            'redeemed',
+            'booking_id',
+            'shift_name'
+        ],
+        item: `<div class="col-md-6">           
+            <div class="card order_card">
+                <div class="order_card_head">
+                    <div>
+                        <img class="image" src="" alt="">
+                    </div>
+                    <div class="order_card_head_left">
+                        <div>
+                            <h4 class="delivery_type">Delivery</h4>
+                            <p> <img src="/public/web/images/location.svg" alt=""> <span class="address"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order_card_body">
+                    <p class="orders"></p>
+                    <p>
+                       Booking ID :<span class="booking_id" style="font-weight:700;"></span><br/> 
+                       Time :<span class="shift_name" style="font-weight:700;"></span><br/> 
+                       Scheduled At :<span class="scheduled_date"></span><br/>
+                       Created At &nbsp;&nbsp;&nbsp;&nbsp;:<span class="created_date"></span>
+                    </p>
+                    <div class="redeemed"></div>
+                </div>
+            </div>
+        </div>`,
+        page: 6,
+        pagination: true,
+    };
+
+    var order_list = new List('order-list', options);
+
+    function renderBookingsList(bookings) {
+        order_list.clear()
+        $.each(bookings, function (key, booking) {
+            console.log({
+                booking
+            })
+            var {_id, address, orders, delivery_type, created_at, redeemed, scheduled_date, can_cancel, expired, booking_id, shift, order_active, company_id } = booking
+            shift_name = ""
+            if(shift){
+                let {name} = shift
+                shift_name = name
+            }
+            var address_string = ""
+            if (typeof address != 'undefined' && address) {
+                address_string = address.address_line1
+            }
+            var delivery = "Delivery"
+            var image = location_icon.van
+
+            if(company_id){
+                image = location_icon.office
+                delivery = "Office"
+            }else if (delivery_type != "ONLINE") {
+                image = location_icon.shop
+                delivery = "Collection Point"
+            }
+            var order_string = ""
+            if (orders.length > 0) {
+                $.each(orders, function (key, order) {
+                    if (order_string) {
+                        order_string += ", "
+                    }
+                    order_string += `(${order.quantity}x) ${order.product_name}`
+                })
+            }
+            var redeemed_html = `<span class="badge badge-danger">Waiting for delivery</span>`
+            if (expired) {
+                redeemed_html = `
+                    <span class="badge badge-danger">Expired</span>
+                `
+            } else if (redeemed == true) {
+                redeemed_html = `<span class="badge badge-success">Delivered</span>`
+            }
+            if(order_active && redeemed == false){
+                redeemed_html += `<a class="badge badge-success ml-2" href="${APP_URL+"/trackdriver?booking_id="+_id}">Track Driver</a>`
+            }
+            created_at = moment(created_at).format('YYYY-MM-DD hh:mm a')
+            scheduled_date = moment(scheduled_date).format('YYYY-MM-DD')
+            order_list.add({
+                image,
+                address: address_string,
+                delivery_type: delivery,
+                orders: order_string,
+                created_date: created_at,
+                scheduled_date,
+                redeemed: redeemed_html,
+                booking_id,
+                shift_name : shift_name
+            })
+        })
+    }
+    function getOrdersList() {
+        $.ajax({
+            url: "<%=app_url%>/getorderslist",
+            data: {},
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    message,
+                    errors,
+                    bookings
+                } = data;
+                errors = typeof errors != 'undefined' ? errors : []
+                message = typeof message != 'undefined' ? message : null
+                bookings = typeof bookings != 'undefined' ? bookings : []
+                if (status == true) {
+                    if (bookings.length > 0) {
+                        console.log(bookings)
+                        renderBookingsList(bookings)
+                    }
+                }
+            }
+        });
+        return false
+    }
+    getOrdersList()
+</script>
+<%-include('./shared/footer-panel.ejs')%>

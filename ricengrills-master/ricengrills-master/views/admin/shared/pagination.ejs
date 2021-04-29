@@ -1,0 +1,54 @@
+<% 
+    if(paginate.hasPreviousPages || paginate.hasNextPages(pageCount)){
+    %>
+    <div class="row mt-3">
+        <div class="col-sm-12 col-md-5">
+            <!-- <div class="dataTables_info" id="bootstrap-data-table_info" role="status" aria-live="polite">Showing 1 to 10 of 57 entries</div> -->
+        </div>
+        <div class="col-sm-12 col-md-7">
+            <div class="dataTables_paginate paging_simple_numbers" id="bootstrap-data-table_paginate">
+                <ul class="pagination">
+                    <% if( pageCount > 5){ %>
+                    <li class="paginate_button page-item" id="bootstrap-data-table_previous">
+                        <a href="<%=paginate.href({page:1})%>" aria-controls="bootstrap-data-table" class="page-link">
+                            <i class="fa fa-fast-backward"></i>
+                        </a>
+                    </li>
+                    <% } %>
+                    <% if(paginate.hasPreviousPages){%>
+                    <li class="paginate_button page-item previous" id="bootstrap-data-table_previous">
+                        <a href="<%=paginate.href(true)%>" aria-controls="bootstrap-data-table" class="page-link">
+                            <i class="fa fa-step-backward"></i>
+                        </a>
+                    </li>
+                    <%}
+                        if(pages){
+                            pages.forEach((page)=>{
+                        %>
+                    <li class="paginate_button page-item <% if(activePage == page.number){%>active<%}%>">
+                        <a href="<%= page.url %>" aria-controls="bootstrap-data-table" data-dt-idx="<%=page.number%>" tabindex="0" class="page-link">
+                            <%=page.number%>
+                        </a>
+                    </li>
+                    <%});
+                        }%>
+                    <% if(paginate.hasNextPages(pageCount)){ %>
+                    <li class="paginate_button page-item next" id="bootstrap-data-table_next">
+                        <a href="<%=paginate.href()%>" aria-controls="bootstrap-data-table" class="page-link">
+                            <i class="fa fa-step-forward"></i>
+                        </a>
+                    </li>
+                    <% } %>
+                    <% if( pageCount > 5){%>
+                    <li class="paginate_button page-item" id="bootstrap-data-table_previous">
+                        <a href="<%=paginate.href({page:pageCount})%>" aria-controls="bootstrap-data-table" class="page-link">
+                            <i class="fa fa-fast-forward"></i>
+                        </a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+<%}%>
+

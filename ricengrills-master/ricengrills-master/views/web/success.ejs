@@ -1,0 +1,21 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="success_fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="secess_mesasge">
+                    <img src="<%=asset_url%>/public/web/images/seccess.svg" alt="">
+                    <h5> Yay! Order Received </h5>
+                    <p> Your order has been successfully completed.
+                        Within moments you will receive a notification
+                        with the receipt of your purchase. </p>
+
+                        <a href="<%=app_url%>/user" id=""> <div class="btn btn-dark"> Back to Website </div> </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%-include('./shared/add-credit.ejs')%>
+<%-include('./shared/scripts.ejs')%>
+<%-include('./shared/footer-panel.ejs')%>

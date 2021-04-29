@@ -1,0 +1,401 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <span class="breadcrumb-item active">Tranasactions</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Tranasactions list</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <form action="">
+            <div class="d-flex align-items-center justify-content-end bg-gray-100 ht-md-80  pd-x-20 mg-t-10">
+                <div class="d-md-flex pd-y-20 pd-md-y-0 col-md-6">
+                    <input type="text" class="form-control" name="search" value="" placeholder="Search Mobile / Email/ Booking ID">
+                    <button type="submit" class="btn btn-success pd-y-13 pd-x-20 bd-0 mg-md-l-10 mg-t-10 mg-md-t-0 tx-uppercase tx-11 tx-spacing-2">Search</button>
+                </div>
+            </div>
+        </form>
+            <table class="table table-bordered bg-white border-top-1 border border-light">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Transaction ID</th>
+                        <th>Order ID</th>
+                        <th>Amount</th>
+                        <th>Refund Amount</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                   <%
+                    let i = 0;
+                    transactions.forEach(rec=>{
+                        let {_id, user,payment_id,amount,refund_amount,refund_status, type, booking_id, date, gateway} = rec
+                        let user_name = ""
+                        let user_id = ""
+                        let user_credits = 0
+                        if(user){
+                            let {_id, name,mobile,email, credits} = user
+                            user_name = name
+                            user_id = _id
+                            user_credits = credits
+                        }
+                        if(!gateway){
+                            gateway = "square"
+                        }
+                        %>
+                        <tr>
+                            <td><%=++i%></td>
+                            <td><%=user_name%>($<%=user_credits.toFixed(2)%>)</td>
+                            <td><%=payment_id%></td>
+                            <td><%=booking_id%></td>
+                            <td><%=amount%></td>
+                            <td><%=refund_amount%></td>
+                            <td><%=type%>/<%=gateway%></td>
+                            <td><%=moment(date).format('DD-MM-YYYY hh:mm')%></td>
+                            <td>
+                                <%
+                                if(gateway != "paypal"){
+                                        if(!refund_status){
+                                            %>
+                                                <button title="refund" class="btn btn-sm" onclick="refundAmount('<%=_id%>','<%=payment_id%>','<%=amount%>','<%=refund_amount%>')"><i class="fa fa-send"></i></button>
+                                            <%
+                                        }
+                                }else{
+                                    if(!refund_status){
+                                        %>
+                                        <button title="refund" class="btn btn-sm" onclick="refundAmountPaypal('<%=_id%>','<%=payment_id%>','<%=amount%>','<%=refund_amount%>')"><i class="fa fa-send"></i></button>
+                                        <%
+                                    }
+                                }
+                                %>
+                                
+                                <button title="edit user credit" class="btn btn-sm" onclick="editCredits('<%=user_id%>','<%=user_name%>','<%=user_credits%>')"><i class="fa fa-money"></i></button>
+                            </td>
+                        </tr>
+                        <%
+                    })
+                   %>
+                </tbody>
+            </table>
+            <%-include('../shared/pagination.ejs',pages)%>
+    </div>
+    <!-- br-pagebody -->
+</div>
+<!-- br-mainpanel -->
+<!-- ########## END: MAIN PANEL ########## -->
+<!-- modal -->
+<div class="modal fade" id="transactionModal">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content tx-size-sm">
+        <div class="modal-header pd-x-20">
+          <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Refund Transaction</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="javascript:;" id="refundForm">
+            <div class="modal-body pd-20">
+                <small class="mt-0">You can enter partial amount or full amount to refund</small>
+                <div class="row">
+                    <div class="form-layout form-layout-6">
+                        <div class="row no-gutters">
+                            <div class="col-5 col-sm-4">
+                                Amount:
+                            </div><!-- col-4 -->
+                            <div class="col-7 col-sm-8">
+                                <input type="hidden" name="payment_id">
+                                <input class="form-control" type="text" name="amount" placeholder="Enter Amount">
+                            </div><!-- col-8 -->
+                        </div><!-- row -->
+                    </div>
+                </div>
+            </div><!-- modal-body -->
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-sm btn-primary tx-size-sm submitBtn">Proceed</button>
+                <button type="button" class="btn btn-sm btn-secondary tx-size-sm" data-dismiss="modal">Close</button>
+            </div>
+        </form>
+      </div>
+    </div><!-- modal-dialog -->
+  </div><!-- modal -->
+<!-- end modal -->
+
+
+<!-- modal -->
+<div class="modal fade" id="transactionModalPaypal">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content tx-size-sm">
+        <div class="modal-header pd-x-20">
+          <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Refund Transaction</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="javascript:;" id="refundFormPaypal">
+            <div class="modal-body pd-20">
+                <small class="mt-0">You can enter partial amount or full amount to refund</small>
+                <div class="row">
+                    <div class="form-layout form-layout-6">
+                        <div class="row no-gutters">
+                            <div class="col-5 col-sm-4">
+                                Amount:
+                            </div><!-- col-4 -->
+                            <div class="col-7 col-sm-8">
+                                <input type="hidden" name="payment_id">
+                                <input class="form-control" type="text" name="amount" placeholder="Enter Amount">
+                            </div><!-- col-8 -->
+                        </div><!-- row -->
+                    </div>
+                </div>
+            </div><!-- modal-body -->
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-sm btn-primary tx-size-sm submitBtn">Proceed</button>
+                <button type="button" class="btn btn-sm btn-secondary tx-size-sm" data-dismiss="modal">Close</button>
+            </div>
+        </form>
+      </div>
+    </div><!-- modal-dialog -->
+  </div><!-- modal -->
+<!-- end modal -->
+
+<!-- modal -->
+<div class="modal fade" id="creditModal">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content tx-size-sm">
+        <div class="modal-header pd-x-20">
+          <h6 class="tx-14 mg-b-0 tx-uppercase tx-inverse tx-bold">Edit User Credits of <span id="username"></span></h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="javascript:;" id="creditForm">
+            <div class="modal-body pd-20">
+                <small class="mt-0">This amount will effect to user credits, make sure credit added/removed is correct</small>
+                <div class="row">
+                    <div class="form-layout form-layout-6">
+                        <div class="row no-gutters">
+                            <div class="col-5 col-sm-4">
+                                Amount:
+                            </div><!-- col-4 -->
+                            <div class="col-7 col-sm-8">
+                                <input type="hidden" name="user_id">
+                                <input class="form-control" type="text" name="credit_amount" placeholder="Enter Amount">
+                            </div><!-- col-8 -->
+                        </div><!-- row -->
+                    </div>
+                </div>
+            </div><!-- modal-body -->
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-sm btn-primary tx-size-sm submitBtn">Proceed</button>
+                <button type="button" class="btn btn-sm btn-secondary tx-size-sm" data-dismiss="modal">Close</button>
+            </div>
+        </form>
+      </div>
+    </div><!-- modal-dialog -->
+  </div><!-- modal -->
+<!-- end modal -->
+<%-include('../shared/scripts.ejs')%>
+<script>
+    $("#transactions").addClass('active')
+    function refundAmount(id,payment_id,amount,refund_amount){
+        $('input[name="amount"]').val((+amount - +refund_amount))
+        $('input[name="payment_id"]').val(payment_id)
+        $('#transactionModal').modal("toggle")
+    }
+    function refundAmountPaypal(id,payment_id,amount,refund_amount){
+        $('input[name="amount"]').val((+amount - +refund_amount))
+        $('input[name="payment_id"]').val(payment_id)
+        $('#transactionModalPaypal').modal("toggle")
+    }
+
+    function editCredits(user_id,user_name,user_credits){
+        $("#username").html(user_name)
+        $('input[name="credit_amount"]').val(user_credits)
+        $('input[name="user_id"]').val(user_id)
+        $('#creditModal').modal("toggle")
+    }
+
+    $("form#creditForm").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                credit_amount: {
+                    required: true,
+                    number: true
+                }
+            },
+            messages: {
+                credit_amount: {
+                    required: "Amount is required.",
+                    number: 'Amount should be numeric'
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                $.ajax({
+                    url: "<%=app_url%>/updatecredit",
+                    data: $(form).serialize(),
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function(){
+                                window.location.reload()
+                            },1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                        // $('.submitBtn').prop('disabled', false)
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                });
+                return false;
+            }
+        });
+
+        $("form#refundForm").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                amount: {
+                    required: true,
+                    number: true
+                }
+            },
+            messages: {
+                amount: {
+                    required: "Amount is required.",
+                    number: 'Amount should be numeric'
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                $.ajax({
+                    url: "<%=app_url%>/trasactions/process",
+                    data: $(form).serialize(),
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function(){
+                                window.location.reload()
+                            },1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                        // $('.submitBtn').prop('disabled', false)
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                });
+                return false;
+            }
+        });
+
+        $("form#refundFormPaypal").validate({
+            normalizer: function(value) {
+                return $.trim(value);
+            },
+            rules: {
+                amount: {
+                    required: true,
+                    number: true
+                }
+            },
+            messages: {
+                amount: {
+                    required: "Amount is required.",
+                    number: 'Amount should be numeric'
+                }
+            },
+            submitHandler: function(form) {
+                $('.submitBtn').prop('disabled', true)
+                $.ajax({
+                    url: "<%=app_url%>/trasactions/processpaypal",
+                    data: $(form).serialize(),
+                    type: "POST",
+                    dataType: "json",
+                    success: function(data) {
+                        var {
+                            status,
+                            message,
+                            errors,
+                            data,
+                        } = data;
+                        errors = typeof errors != 'undefined' ? errors : []
+                        message = typeof message != 'undefined' ? message : null
+                        data = typeof data != 'undefined' ? data : {}
+
+                        if (status == true) {
+                            toastr["success"](message);
+                            setTimeout(function(){
+                                window.location.reload()
+                            },1000)
+                        } else {
+                            if (errors.length > 0) {
+                                toastr["error"](errors[0]);
+                            } else if (message) {
+                                toastr["error"](message);
+                            }
+                            $('.submitBtn').prop('disabled', false)
+                        }
+                        // $('.submitBtn').prop('disabled', false)
+                    },
+                    error: function(error) {
+                        $('.submitBtn').prop('disabled', false)
+                    }
+                });
+                return false;
+            }
+        });
+</script>
+<%-include('../shared/footer-panel.ejs')%>

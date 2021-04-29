@@ -1,0 +1,183 @@
+<%-include('../shared/head-panel.ejs')%>
+<!-- ########## START: MAIN PANEL ########## -->
+<%
+   var suburbs = []
+   if(coupon.suburbs){
+    suburbs = coupon.suburbs
+   }
+%>
+<div class="br-mainpanel">
+    <div class="br-pageheader pd-y-15 pd-l-20">
+        <nav class="breadcrumb pd-0 mg-0 tx-12">
+            <a class="breadcrumb-item" href="<%=app_url%>/dashboard">
+                <%=SITE_NAME%>
+            </a>
+            <a class="breadcrumb-item" href="<%=app_url%>/coupons">Coupons</a>
+            <span class="breadcrumb-item active">Edit Coupon</span>
+        </nav>
+    </div>
+    <!-- br-pageheader -->
+    <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
+        <h5 class="tx-gray-800 mg-b-5">Edit Coupon</h4>
+    </div>
+
+    <div class="br-pagebody">
+        <div class="row mg-t-40">
+            <div class="col-xl-12">
+                <form id="mainForm" action="javascript:;">
+                    <div class="form-layout form-layout-4 bg-white">
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Coupon Name <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <input type="hidden" value="<%=coupon._id%>" name="coupon_id">
+                                <input type="text" class="form-control" value="<%=coupon.name%>" placeholder="Enter Coupon name" name="name">
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Discount Percentage <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <input type="number" class="form-control" value="<%=coupon.val%>" placeholder="Enter Coupon value" name="val">
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Code <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <input type="text" class="form-control" value="<%=coupon.code%>" placeholder="Enter Coupon code" name="code">
+                            </div>
+                        </div>          
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Suburbs: <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <select class="form-control select2-show-search" multiple data-placeholder="Choose suburb"  id="suburb_id" name="suburbs">
+                                    <option  label="Choose one"></option>
+                                    <%
+                                    suburb.forEach(suburbs=>{                                                
+                                        %>
+                                         <option value="<%=suburbs._id%>"><%=suburbs.name%></option>
+                                        <%
+                                    })
+                                %>
+                                  </select>
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Banner Image <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <input type="file" class="form-control"   name="image">
+                            </div>
+                        </div>              
+                        <div class="row mg-t-20">
+                             <label class="col-sm-4 form-control-label">Count <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                            <input type="number" class="form-control" value="<%=coupon.count%>" placeholder="Enter total coupons" name="count">
+                            </div>
+                        </div>
+                        <div class="row mg-t-20">
+                            <label class="col-sm-4 form-control-label">Banner Image <span class="tx-danger">*</span></label>
+                            <div class="col-sm-8 mg-t-10 mg-sm-t-0">
+                                <input type="file" class="form-control" placeholder="Enter total coupons" name="image">
+                                <%
+                                    if(coupon.image){
+                                        %>
+                                            <img src="/<%= coupon.image %>" value="<%=coupon.image%>"alt="coupon banner" id="banner" class="rounded mx-auto d-block" width="200px">
+                                        <%
+                                    }
+                                %>
+                            </div>
+                        </div>               
+                    </div>
+                    <div class="row mg-t-60">
+                        <div class="form-layout-footer mg-t-30">
+                            <button class="btn btn-info" type="submit">Submit</button>
+                            <a href="<%=app_url%>/coupons"><button class="btn btn-secondary" type="button">Cancel</button></a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<%-include('../shared/scripts.ejs')%>
+<script>
+    var tags = `<%=suburbs.join(',')%>`
+    $('#suburb_id').val(tags.split(',')).trigger('change');
+    $("form#mainForm").validate({
+        normalizer:function(value){
+            return $.trim(value)
+        },
+        rules:{
+            name:{
+                required:true
+            },
+            val:{
+                required:true,
+                max:100
+            },
+            code:{
+                required:true
+            },
+            count:{
+                required:true
+            },
+        },
+        messages:{
+            name:{
+                required:"name is required"
+            },
+            val:{
+                required:"value is required",
+                max:"maximum value is 100"
+            },
+            code:{
+                required:"coupon code is required"
+            },
+            count:{
+                required:"count is requiured"
+            },
+        },
+        submitHandler: function(form) {
+                    $('.submitBtn').prop('disabled', true)
+                    var form = document.getElementById("mainForm");
+                    var data = new FormData(form)
+                    $.ajax({
+                        url: "<%=app_url%>/coupons/edit",
+                        data,
+                        type: "POST",
+                        dataType: "json",
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        success: function(data) {
+                            var {
+                                status,
+                                message,
+                                errors,
+                                data
+                            } = data;
+                            errors = typeof errors != 'undefined' ? errors : []
+                            message = typeof message != 'undefined' ? message : null
+                            data = typeof data != 'undefined' ? data : {}
+
+                            if (status == true) {
+                                toastr["success"](message);
+                                setTimeout(function() {
+                                    window.location.href = "<%=app_url%>/coupons";
+                                }, 1000)
+                            } else {
+                                if (errors.length > 0) {
+                                    toastr["error"](errors[0]);
+                                } else if (message) {
+                                    toastr["error"](message);
+                                }
+                                $('.submitBtn').prop('disabled', false)
+                            }
+                        },
+                        error: function(error) {
+                            $('.submitBtn').prop('disabled', true)
+                        }
+                    });
+                    return false;
+                }
+    })
+</script>
+<%-include('../shared/footer-panel.ejs')%>

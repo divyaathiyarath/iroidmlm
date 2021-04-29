@@ -1,0 +1,9 @@
+{
+    "apps": [
+        {
+            "name": "riceandgrills",
+            "script": "npm",
+            "args" : "run server"
+        }
+    ]
+}

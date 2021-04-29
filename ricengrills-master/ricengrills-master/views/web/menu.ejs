@@ -1,0 +1,169 @@
+<%- include('./shared/head-panel.ejs')%>
+<div class="container-fluid mini_banner">
+    <img src="<%=asset_url%>/public/web/images/mini-banner.jpg" class="img-fluid" alt="">
+</div>
+<div id="products_list">
+    <div class="main_search wow animate__fadeIn" data-wow-duration="2s" data-wow-delay="2s">
+        <div class="container">
+            <form class="search__wrap">
+                <div class="inner_items">
+                    <svg class="icon search">
+                        <use xlink:href="#search"></use>
+                    </svg>
+                    <input type="text" class="form-control search" id="inputPassword2"
+                        placeholder="Find your Favorite Item ">
+                    <!-- <svg class="icon">
+                        <use xlink:href="#filtter"></use>
+                    </svg> -->
+                    <!-- <button type="submit" class="btn"> Search </button> -->
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="active_zone">
+        <div class="container">
+            <div class="headding__row">
+                <div class="head__03 wow animate__fadeInLeft" data-wow-duration="2s" data-wow-delay="2s"> <span> Today's
+                    </span>Breakfast</div>
+                <div class="btn wow animate__fadeInRight" data-wow-duration="2s" data-wow-delay="2s">
+                    <a href="javascript:;" class="btn btn-danger text-white" style="text-decoration: none;"
+                        onclick="addToCart()">
+                        Proceed
+                    </a>
+                </div>
+            </div>
+            <div class="row list">
+            </div>
+        </div>
+    </div>
+</div>
+
+<%-include('./shared/scripts.ejs')%>
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script>
+    var options = {
+        valueNames: [
+            'name',
+            'price',
+            { name: 'data-price', selector: '.price', attr: 'data-price' },
+            'count',
+            { name: 'product_id', selector: '.product_id', attr: 'data-product' },
+        ],
+        item: `<div class="col-sm-6 col-xl-3 col-12 item">
+                <div class="card item_card box_view wow animate__bounceIn" data-wow-delay="1.1s">
+                    <div class="item_cover">
+                        <img src="" alt="" class="image">
+                    </div>
+                    <h4 class="name"></h4>
+                    <div class="product_quantity">
+                        <div class="inner">
+                            <div class="quantity-selectors">
+                                <button type="button" class="decrement-quantity" aria-label="Subtract one" data-direction="-1" disabled="disabled" onclick="changeQuantities(this)"> 
+                                    <svg class="icon">
+                                        <use xlink:href="#minus"></use>
+                                    </svg>
+                                </button>
+                                <button type="button" class="increment-quantity" aria-label="Add one" data-direction="1" onclick="changeQuantities(this)"> 
+                                    <svg class="icon">
+                                        <use xlink:href="#plus"></use>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input data-min="1" data-max="0" type="text" name="count[]" value="0" readonly="true" class="count data-price" data-price>
+                            <div class="quantity-selectors-container"></div>
+                        </div>
+                    </div>
+                    <h3>$<span class="price"></span></h3>
+                    <div class="btn_cover">
+                        <div class="btn_cover_inner ">
+                            <div class="btn fav"> 
+                                <svg class="icon">
+                                    <use xlink:href="#fav"></use>
+                                </svg> 
+                            </div>
+                            <div class="btn booknow product_id" data-product="" onclick="showAllergenWarnings(this)"> Show Allergens </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`
+    };
+
+    var products_list = new List('products_list', options);
+
+    function renderRegularProducts() {
+        $.ajax({
+            url: "<%=app_url%>/regularproducts",
+            data: {
+                food_only : 1
+            },
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+                var {
+                    status,
+                    products
+                } = data;
+                console.log({ products })
+                if (products.length > 0) {
+
+                    $.each(products, function (key, product) {
+                        console.log({ product })
+                        products_list.add({
+                            name: product.name,
+                            price: product.price,
+                            'data-price': product.price,
+                            count: 0,
+                            product_id: product._id,
+                            // allergen_contents: product.allergen_contents
+                        })
+                    })
+                }
+            }
+        });
+        return false
+    }
+    renderRegularProducts()
+
+    function addToCart() {
+        items = products_list.get()
+        var products = []
+        $.each(items, function (key, item) {
+            var values = item.values()
+            var {
+                product_id
+            } = values
+            var count = $(`.count:eq(${key})`).val()
+            if (count && count > 0) {
+                products.push({
+                    product_id,
+                    count
+                })
+            }
+        })
+        $.ajax({
+            url: "<%=app_url%>/addtocart",
+            data: {
+                products
+            },
+            type: "POST",
+            dataType: "json",
+            success: function (data, textStatus, xhr) {
+                var {
+                    status,
+                    message
+                } = data;
+                if (status) {
+                    window.location.href = APP_URL + '/cart'
+                }else{
+                    toastr['error'](message)
+                }
+            },
+            error: function (xhr) {
+                if (xhr.status == 401) {
+                    window.location.href = APP_URL + '/login'
+                }
+            }
+        });
+    }
+</script>
+<%-include('./shared/footer-panel.ejs')%>

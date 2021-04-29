@@ -1,0 +1,62 @@
+<div class="container_fluid user_head">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 col-lg-8 col-md-10 col-10">
+                <div class="user_head_left">
+                    <div class="user_head_profile">
+                        <div class="pic"> <img src="<%=asset_url%>/public/web/images/user-icon.svg" alt=""> </div>
+                        <div>
+                            <b> <%=session.name%> </b>
+                            <p> <%=session.email%> </p>
+                            <p> <%=session.mobile%> </p>
+                            <div class="d-flex ">
+                            <p> <a href="<%=app_url%>/logout" style="color: white; list-style: none;" class="mr-3"><u>Logout</u></a> </p>
+                            <p>  <a href="<%=app_url%>/profile" class="linkz" style="text-decoration:none; color:#fff; font-size: 14px;"> <u>Edit Profile</u></a></p>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- <a href="<%=app_url%>/profile" class="link"> <u>Edit Profile</u></a> -->
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-4 col-md-2 col-2 ">
+                <div class="user_head_right">
+                    <nav class="navbar navbar-expand-xl">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#user_menu" aria-controls="user_menu" aria-expanded="false" aria-label="Toggle navigation">
+                            <img src="<%=asset_url%>/public/web/images/menu.svg" alt="">
+                        </button>
+                        
+                        <div class="collapse navbar-collapse" id="user_menu">
+
+                          <ul class="navbar-nav aic">
+                               <div class="close__side_nav" data-toggle="collapse" data-target="#user_menu"
+                                aria-controls="navbarTogglerDemo01" aria-expanded="true" aria-label="Toggle navigation">
+
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="feather feather-x">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                            <!-- <li>
+                              <a href="#">Home</a>
+                            </li> -->                           
+                            <li><a href="<%=app_url%>/user" id="nav-orders" class="">Orders</a>
+                            </li>
+                            <li><a href="<%=app_url%>/scheduled" id="nav-scheduled" class="">Scheduled</a></li>
+                            <li><a href="<%=app_url%>/bulkorders" id="nav-bulk" class="">Bulk Orders</a></li>
+                            <li><a href="<%=app_url%>/addresses" id="nav-addresses" class="">Addresses</a></li>
+                            <!-- <li><a href="change-password.html" id="" class="">Change Password</a> -->
+                            </li>
+                            <li><a href="<%=app_url%>/notifications" id="" class="notification df aic">
+                                <img src="<%=asset_url%>/public/web/images/notification.svg" alt="">
+                            </a></li>
+                          </ul>                           
+                        </div>
+                      </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
